@@ -1,0 +1,19 @@
+# Create a build environment and build MakeMKV CLI
+#
+#
+- name: MakeMKV cli
+  hosts: localhost
+
+  tasks:
+    - name: Say Hello
+      debug:
+        msg: Hello
+
+    - name: Create build environment
+      block: 
+        - name: Say Hello in block
+          debug:
+            msg: Hello in block
+          
+          
+        
