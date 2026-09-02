@@ -98,12 +98,21 @@
           
       tags: tarballs
 
-    - name: Configure Source Build
-      shell:
-        chdir: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}"
-        cmd: ./configure
-        creates: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}/config.status"
-      tags: configure
-        
+    - name: Build Components
+      block:
+        - name: Configure Source Build
+          shell:
+            chdir: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}"
+            cmd: ./configure
+            creates: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}/Makefile"
+
+        - name : Build MakeMKV linux files
+          make:
+            chdir: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}"
+          when: 
+
+      tags: build
+
+    
   
 
