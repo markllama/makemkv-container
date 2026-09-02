@@ -4,16 +4,97 @@
 - name: MakeMKV cli
   hosts: localhost
 
+  vars:
+    makemkv:
+      version: 1.18.4
+      components:
+        - oss
+        - bin
+
   tasks:
     - name: Say Hello
       debug:
         msg: Hello
 
+    - name: Check Toolbox
+      block:
+        - name: Run only in toolbox
+          stat:
+            path: /run/.toolboxenv
+          register: in_toolbox
+
+        - name: Fail if not running in toolbox
+          fail:
+            msg: Not running in toolbox
+          when: in_toolbox.stat.exists == false
+
+    - name: Check Root Access (needed for package installation)
+      block:
+        - name: Test Sudo Access
+          debug:
+            msg: This command runs successfully under sudo
+          become: true
+          register: sudo_successful
+
     - name: Create build environment
-      block: 
+      block:
         - name: Say Hello in block
           debug:
             msg: Hello in block
+
+        - name: Install Development Tools
+          dnf5:
+            name: "@Development Tools"
+            state: present
+          become: true
           
+        - name: Install required packages from fedora repos
+          dnf5:
+            name:
+              - openssl-devel
+              - expat-devel
+              - mesa-libGL-devel
+              - qt5-qtbase-devel
+              - zlib-devel
+              - distribution-gpg-keys
+            state: present
+          become: true
+
+# sudo rpmkeys --import /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora) 
+  
+        - name: Import RPM Fusion Free GPG Key (from distribution-gpg-keys)
+          rpm_key:
+            state: present
+            key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-{{ ansible_distribution_version }}
+
+        - name: Enable the RPM Fusion repository
+          dnf5:
+            name: "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_version }}.noarch.rpm"
+            state: present
+          become: true
+          when: ansible_distribution == 'Fedora'      
+            
+        - name: Install ffmpeg packages from RPM Fusion
+          dnf5:
+            name:
+              - ffmpeg-devel
+            state: present
+          become: true
+
+    - name: Get MakeMKV Sources
+      block:
+        - name: Get MakeMKV Tarballs
+          uri:
+            url: "https://www.makemkv.com/download/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+            dest: "{{ ansible_env.PWD }}/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+            creates: "{{ ansible_env.PWD }}/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+          loop: "{{ makemkv.components }}"
+
+        - name: Unpack MakeMKV Tarballs
+          unarchive:
+             src: "{{ ansible_env.PWD }}/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+             dest: "{{ ansible_env.PWD }}"
+          loop: "{{ makemkv.components }}"
           
-        
+      tags: tarballs
+
