@@ -3,6 +3,7 @@
 #
 - name: MakeMKV cli
   hosts: localhost
+  connection: local
 
   vars:
     makemkv:
@@ -130,9 +131,32 @@
 
     - name: Create Model Tree
       block:
-        - name: Copy Built Binaries
-          debug:
-            msg: Copying built binaries
+        #
+        # files from src/out
+        #
+        - name: Copy compiled binaries
+          copy:
+            src: "src/out/{{ item }}"
+            dest: "model/usr/bin/{{ item }}"
+            #owner: root
+            mode: 0755
+          loop:
+            - mmccextr
+            - mmgplsrv
+
+        # NOTE: Add arch for other systems. Assuming x86_64 (amd64)
+        - name: Copy portable binary
+          copy:
+            src: "src/bin/amd64/{{ item }}"
+            dest: "model/usr/bin/{{ item }}"
+            #owner: root
+            mode: 0755
+          loop:
+            - makemkvcon
+
+        #
+        # src/bin/ARCH/makemkvcli
+        #
 
         - name: Copy Built Libraries
           debug:
@@ -141,4 +165,5 @@
         - name: Copy Master Binaries
           debug:
             msg: Copying Master Binaries
-          pass
+
+      tags: model
