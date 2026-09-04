@@ -17,6 +17,10 @@
       debug:
         msg: Hello
 
+    # ---------------------------------------------------
+    # Right now this playbook will only work in a toolbox
+    # This protects the base OS from contamination
+    # ---------------------------------------------------
     - name: Check Toolbox
       block:
         - name: Run only in toolbox
@@ -29,6 +33,10 @@
             msg: Not running in toolbox
           when: in_toolbox.stat.exists == false
 
+    # -------------------------------------------------
+    # Preparation of the build environment requires root
+    # It installs packages into the toolkit
+    # -------------------------------------------------
     - name: Check Root Access (needed for package installation)
       block:
         - name: Test Sudo Access
@@ -37,12 +45,14 @@
           become: true
           register: sudo_successful
 
+    # ------------------------------------------------
+    # Build requires compilers and other build tools to
+    # Create the 'variable' binaries and libraries
+    # One of the packages comes from RPM Fusion, so that
+    # repo is enabled as well
+    # ------------------------------------------------
     - name: Create build environment
       block:
-        - name: Say Hello in block
-          debug:
-            msg: Hello in block
-
         - name: Install Development Tools
           dnf5:
             name: "@Development Tools"
@@ -60,8 +70,6 @@
               - distribution-gpg-keys
             state: present
           become: true
-
-# sudo rpmkeys --import /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora) 
   
         - name: Import RPM Fusion Free GPG Key (from distribution-gpg-keys)
           rpm_key:
@@ -82,6 +90,14 @@
             state: present
           become: true
 
+    # ------------------------------------------------------------
+    # MakeMKV is build on Linux from two source tarballs
+    # One of those has compilable sources to build libraries and
+    # two binaries for the app
+    # The second has a single relocatable binary of what
+    # look like a Java jar file and auxiliary files. These latter
+    # are just placed into the destination host without alteration
+    # ------------------------------------------------------------
     - name: Get MakeMKV Sources
       block:
         - name: Get MakeMKV Tarballs
@@ -115,6 +131,11 @@
           
       tags: tarballs
 
+    # -----------------------------------------------------------------------
+    # This block just runs the configure and make commands for the 
+    # compiled components of MakeMKV.  This process does not build
+    # the GUI parts of MakeMKV so it can run in a container without a display
+    # -----------------------------------------------------------------------
     - name: Build Components
       block:
         - name: Configure Source Build
@@ -129,6 +150,12 @@
             
       tags: build
 
+    # -----------------------------------------------------------
+    # The container is built from scratch. It contains only files
+    # that are require to run the app, and none of the build only
+    # artifacts will be present. These steps create the model file
+    # tree that will eventually be placed into the container image.
+    # -----------------------------------------------------------
     - name: Populate Model Tree
       block:
         #
@@ -173,3 +200,10 @@
             - blues.policy
 
       tags: model
+
+
+    # -----------------------------------------------------------
+    # 
+    # -----------------------------------------------------------
+    #- Name: Resolve linking dependencies
+    #  block:
