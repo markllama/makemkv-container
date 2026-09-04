@@ -129,7 +129,7 @@
             
       tags: build
 
-    - name: Create Model Tree
+    - name: Populate Model Tree
       block:
         #
         # files from src/out
@@ -138,7 +138,6 @@
           copy:
             src: "src/out/{{ item }}"
             dest: "model/usr/bin/{{ item }}"
-            #owner: root
             mode: 0755
           loop:
             - mmccextr
@@ -149,21 +148,28 @@
           copy:
             src: "src/bin/amd64/{{ item }}"
             dest: "model/usr/bin/{{ item }}"
-            #owner: root
             mode: 0755
           loop:
             - makemkvcon
 
-        #
-        # src/bin/ARCH/makemkvcli
-        #
-
-        - name: Copy Built Libraries
-          debug:
-            msg: Copying built binaries
-
-        - name: Copy Master Binaries
-          debug:
-            msg: Copying Master Binaries
+        - name: Copy Libraries
+          copy:
+            src: "src/out/{{ item }}"
+            dest: "model/usr/lib64/{{ item }}"
+            mode: 0644
+          loop:
+            - libdriveio.so.0
+            - libmakemkv.so.1
+            - libmmbd.so.0
+            
+        - name: Copy Shared FIles
+          copy:
+            src: "src/src/share/{{ item }}"
+            dest: "model/usr/share/MakeMKV/{{ item }}"
+            mode: 0644
+          loop:
+            - appdata.tar
+            - blues.jar
+            - blues.policy
 
       tags: model
