@@ -205,5 +205,20 @@
     # -----------------------------------------------------------
     # 
     # -----------------------------------------------------------
-    #- Name: Resolve linking dependencies
-    #  block:
+    - name: Resolve linking dependencies
+      block:
+        - name: Identify dynamically linked binaries
+          shell:
+            cmd: "find model | xargs file | grep executable | cut -d: -f1"
+          register: exec_search
+
+        - name: Record the list of dynamically linked executables
+          set_fact:
+            executables: "{{ exec_search.stdout_lines }}"
+
+        - name: Report files found
+          debug:
+            msg: "{{ executables }}"
+
+
+      tags: dependencies
