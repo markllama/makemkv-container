@@ -41,8 +41,6 @@ function main() {
     for rpm_file in $(ls ${PACKAGE_ROOT}/*.rpm) ; do
 	unpack_package ${rpm_file} ${UNPACK_ROOT}
     done
-
-    exit
     
     # Copy the required library files to the model
     for library_file in $libraries ; do
