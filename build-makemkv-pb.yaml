@@ -158,6 +158,16 @@
     # -----------------------------------------------------------
     - name: Populate Model Tree
       block:
+        - name: Initialize the empty model tree
+          file:
+            path: "model/{{ item }}"
+            state: directory
+            recurse: true
+          loop:
+            - usr/bin
+            - usr/lib
+            - usr/lib64
+            - usr/share/MakeMKV
         #
         # files from src/out
         #

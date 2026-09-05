@@ -2,25 +2,53 @@
 
 : MODEL_ROOT=${MODEL_ROOT:=model}
 : LIBRARY_PATH=${LIBRARY_PATH:=${MODEL_ROOT}/usr/lib:${MODEL_ROOT}/usr/lib64}
-
+: PACKAGE_ROOT=${PACKAGE_ROOT:=rpms}
+: PACKAGE_ARCH=${PACKAGE_ARCH:=$(uname -m)}
+: UNPACK_ROOT=${UNPACK_ROOT:=unpack}
 function main() {
+
+    [ -s ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
+    
+    rm -rf ${PACKAGE_ROOT}/*
+    rm -rf ${UNPACK_ROOT}/*
+
     local binaries=$(find_dynamic_binaries ${MODEL_ROOT})
-    local binary
 
-#    echo "====== BINARIES ======"
-#    echo ${binaries}
-#    echo "======================"
-
+    # Identify the shared libraries that must be resolved for the dynamic binaries
     local libraries=$(find_dynamic_libraries "${LIBRARY_PATH}" ${binaries})
     #echo ${libraries}
 
-    local lib
+    mkdir -p ${PACKAGE_ROOT}
+    mkdir -p ${UNPACK_ROOT}
+#    [ -s ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
+    [ -s ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
+ 
+    # Accumulate the list of packages that provide the required libraries
     declare -a packages
-    for lib_file in $libraries ; do
-	packages+=($(find_file_package $lib_file))
+    local library_file
+    for library_file in $libraries ; do
+	packages+=($(find_file_package $library_file))
+    done
+    # Remove any duplicates
+    packages=($(echo ${packages[@]} | tr ' ' '\n' | sort -u))
+
+    local package_name
+    for package_name in ${packages[@]} ; do
+	download_package ${PACKAGE_ROOT} ${package_name}
     done
 
-    echo "${packages[@]}"
+    local rpm_file
+    for rpm_file in $(ls ${PACKAGE_ROOT}/*.rpm) ; do
+	unpack_package ${rpm_file} ${UNPACK_ROOT}
+    done
+
+    exit
+    
+    # Copy the required library files to the model
+    for library_file in $libraries ; do
+	cp ${UNPACK_ROOT}/${library_file} ${MODEL_ROOT}/${library_file}
+    done
+    
 }
 
 function find_dynamic_binaries() {
@@ -59,6 +87,23 @@ function find_file_package() {
     local package=$1
 
     rpm -qf --qf "%{NAME}\n" $package
+}
+
+function download_package() {
+    local package_dir=$1
+    local package_name=$2
+
+    dnf download --quiet --arch ${PACKAGE_ARCH} --destdir ${package_dir} ${package_name}
+}
+
+#
+# Unpack a package into a working directory
+#
+function unpack_package() {
+    local package_filename=$1
+    local unpack_root=$2
+    
+    rpm2cpio ${package_filename} | cpio -idmu --quiet --directory ${unpack_root}
 }
 
 #
