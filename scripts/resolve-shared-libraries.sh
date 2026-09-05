@@ -46,7 +46,10 @@ function main() {
     for library_file in $libraries ; do
 	cp ${UNPACK_ROOT}/${library_file} ${MODEL_ROOT}/${library_file}
     done
-    
+
+    # Add debugging tools: bash and ldd
+    cp /usr/bin/bash ${MODEL_ROOT}/usr/bin/bash
+    cp /usr/bin/ldd ${MODEL_ROOT}/usr/bin/ldd
 }
 
 function find_dynamic_binaries() {

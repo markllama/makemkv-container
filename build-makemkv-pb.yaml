@@ -13,9 +13,6 @@
         - bin
 
   tasks:
-    - name: Say Hello
-      debug:
-        msg: Hello
 
     # ---------------------------------------------------
     # Right now this playbook will only work in a toolbox
@@ -100,11 +97,16 @@
     # ------------------------------------------------------------
     - name: Get MakeMKV Sources
       block:
+        - name: Create tarball holding directory
+          file:
+            path: TARBALLS
+            state: directory
+
         - name: Get MakeMKV Tarballs
           uri:
             url: "https://www.makemkv.com/download/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
-            dest: "{{ ansible_env.PWD }}/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
-            creates: "{{ ansible_env.PWD }}/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+            dest: "{{ ansible_env.PWD }}/TARBALLS/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+            creates: "{{ ansible_env.PWD }}/TARBALLS/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
           loop: "{{ makemkv.components }}"
 
         - name: Create Destination for unpack
@@ -112,9 +114,9 @@
             name: src
             state: directory
             
-        - name: Unpack MakeMKV Tarballs
+        - name: Unpack MakeMKV Binary Tarball
           unarchive:
-             src: "{{ ansible_env.PWD }}/makemkv-bin-{{ makemkv.version }}.tar.gz"
+             src: "{{ ansible_env.PWD }}/TARBALLS/makemkv-bin-{{ makemkv.version }}.tar.gz"
              dest: "{{ ansible_env.PWD }}/src"
              extra_opts: [ "--strip-components", '1' ]
 
@@ -123,9 +125,9 @@
             src: src/Makefile
             dest: src/Makefile.bin
 
-        - name: Unpack MakeMKV Tarballs
+        - name: Unpack MakeMKV Source Tarball
           unarchive:
-             src: "{{ ansible_env.PWD }}/makemkv-oss-{{ makemkv.version }}.tar.gz"
+             src: "{{ ansible_env.PWD }}/TARBALLS/makemkv-oss-{{ makemkv.version }}.tar.gz"
              dest: "{{ ansible_env.PWD }}/src"
              extra_opts: [ "--strip-components", '1' ]
           
