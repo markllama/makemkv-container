@@ -1,7 +1,7 @@
 # Create a build environment and build MakeMKV CLI
 #
 # echo "mark ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/mark
-# sudo dnf install ansible
+# sudo dnf install --assumeyes ansible
 #
 - name: MakeMKV cli
   hosts: localhost
