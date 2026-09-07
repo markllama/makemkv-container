@@ -1,5 +1,7 @@
 # Create a build environment and build MakeMKV CLI
 #
+# echo "mark ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/mark
+# sudo dnf install ansible
 #
 - name: MakeMKV cli
   hosts: localhost
@@ -72,6 +74,7 @@
           rpm_key:
             state: present
             key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-{{ ansible_distribution_version }}
+          become: true
 
         - name: Enable the RPM Fusion repository
           dnf5:
@@ -86,6 +89,13 @@
               - ffmpeg-devel
             state: present
           become: true
+
+        - name: Clean DNF Cache -  RPM fusion in cache causes problems
+          shell:
+            cmd: "dnf clean packages"
+          become: true
+
+      tags: devtools
 
     # ------------------------------------------------------------
     # MakeMKV is build on Linux from two source tarballs
@@ -146,7 +156,14 @@
             cmd: ./configure --disable-gui
             creates: "{{ ansible_env.PWD }}/src/config.log"
 
-        - name : Build MakeMKV linux files
+        - name: Accept EULA License
+          copy:
+            dest: "{{ ansible_env.PWD }}/src/tmp/eula_accepted"
+            content: |
+              accepted
+            state: present
+
+        - name: Build MakeMKV linux files
           make:
             chdir: "{{ ansible_env.PWD }}/src"
             
@@ -159,6 +176,7 @@
     # tree that will eventually be placed into the container image.
     # -----------------------------------------------------------
     - name: Populate Model Tree
+      
       block:
         - name: Initialize the empty model tree
           file:
@@ -170,8 +188,30 @@
             - usr/lib
             - usr/lib64
             - usr/share/MakeMKV
+
+        - name: Create root symlinks
+          file:
+            path: "model/{{ item }}"
+            src: "usr/{{ item }}"
+            state: link
+          loop:
+            - bin
+            - lib
+            - lib64
+
+        # - name: Install glibc for dynamic linking
+        #   dnf5:
+        #     name: glibc
+        #     state: present
+        #     installroot: "{{ ansible_env.PWD }}/model"
+        #     install_weak_deps: false
         #
+
+        # - name: Install glibc for dynamic linking
+        #   shell:
+        #     cmd: "dnf install --assumeyes --no-gpgchecks --installroot {{ ansible_env.PWD }}/model glibc --use-host-config --setopt install_weak_deps=false"
         # files from src/out
+
         #
         - name: Copy compiled binaries
           copy:
