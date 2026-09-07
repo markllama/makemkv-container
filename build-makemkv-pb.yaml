@@ -156,17 +156,21 @@
             cmd: ./configure --disable-gui
             creates: "{{ ansible_env.PWD }}/src/config.log"
 
-        - name: Accept EULA License
-          copy:
-            dest: "{{ ansible_env.PWD }}/src/tmp/eula_accepted"
-            content: |
-              accepted
-            state: present
+        - name: Create space for EULA
+          file:
+            path: "{{ ansible_env.PWD }}/src/tmp"
+            state: directory
 
         - name: Build MakeMKV linux files
           make:
             chdir: "{{ ansible_env.PWD }}/src"
             
+        - name: Accept EULA License
+          copy:
+            dest: "{{ ansible_env.PWD }}/src/tmp/eula_accepted"
+            content: |
+              accepted
+
       tags: build
 
     # -----------------------------------------------------------
