@@ -11,7 +11,6 @@ function main() {
     [ -s ${MODEL_ROOT}/bin ] || ln -s usr/bin ${MODEL_ROOT}/bin
     [ -s ${MODEL_ROOT}/lib ] || ln -s usr/lib ${MODEL_ROOT}/lib64
     [ -s ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
-    [ -s ${MODEL_ROOT}/usr/lib ] || ln -s lib64 ${MODEL_ROOT}/usr/lib
     
     rm -rf ${PACKAGE_ROOT}/*
     rm -rf ${UNPACK_ROOT}/*
@@ -19,6 +18,7 @@ function main() {
     # Add debugging tools: bash and ldd
     cp /usr/bin/bash ${MODEL_ROOT}/usr/bin/bash
     ln -s bash ${MODEL_ROOT}/usr/bin/sh
+    cp /usr/bin/ls ${MODEL_ROOT}/usr/bin/ls
     cp /usr/bin/ldd ${MODEL_ROOT}/usr/bin/ldd
 
     local binaries=$(find_dynamic_binaries ${MODEL_ROOT})
