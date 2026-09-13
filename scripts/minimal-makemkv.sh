@@ -26,6 +26,9 @@ DEFAULT_BASE=scratch
 : BUILDER="${BUILDER:=${DEFAULT_BUILDER}}"
 : BASE="${BASE:=${DEFAULT_BASE}}":
 
+# podman run -v <key_file>:/keyfile -v <dir>:/input [-v <dir>:/output] quay.io/markllama/makemkv <info|backup|mkv> <input type> <input file> [<track ids> <output dir>]
+
+# /usr/bin/makemkv
 
 function main() {
 
@@ -46,10 +49,11 @@ function main() {
 	# add a volume to include the configuration file
 	# Leave the files in the default locations 
 	#buildah config --env MAKEMKV_KEY $container
+	buildah config --env "HOME=/" $container
 	buildah config --env "LD_LIBRARY_PATH=/usr/lib64:/usr/lib" $container
-	buildah config --volume /keyfile $container
-	buildah config --volume /data/input $container
-	buildah config --volume /data/output $container
+	buildah config --volume /config $container
+	buildah config --volume /input $container
+	buildah config --volume /output $container
 
 	# # open ports for listening
 #	buildah config --port 68/udp --port 69/udp ${container}
@@ -93,8 +97,11 @@ function copy_model_tree() {
     cp -r ${source_root}/* ${mountpoint}
     
     # Create volume mount points
-    mkdir -p ${mountpoint}/data/input
-    mkdir -p ${mountpoint}/data/output
+    mkdir -p ${mountpoint}/tmp
+    mkdir -p ${mountpoint}/.MakeMKV
+    ln -s /config ${mountpoint}/.MakeMKV/settings.conf
+    mkdir -p ${mountpoint}/input
+    mkdir -p ${mountpoint}/output
 
     [ -z ${DEBUG} ] || (echo FULL ; cd ${mountpoint} ; pwd ;  find . -type f)
 
