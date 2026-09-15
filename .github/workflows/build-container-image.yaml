@@ -31,7 +31,7 @@ jobs:
         run: git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
       - name: Configure ffmpeg
-        working_directory: ffmpeg
+        working-directory: ffmpeg
         run:
           ./configure \
             --prefix=/tmp/ffmpeg \
@@ -41,6 +41,6 @@ jobs:
             --enable-libfdk-aac
 
       - name: Build ffmpeg
-        working_directory: ffmpeg
+        working-directory: ffmpeg
         run: make install
     
