@@ -27,8 +27,6 @@ jobs:
       - name: Install Libraries for makemkvcon
         run: |
           sudo apt -y install \
-            build-essential \
-            pkg-config \
             libc6-dev \
             libssl-dev \
             libexpat1-dev \
@@ -84,3 +82,8 @@ jobs:
         working-directory: ffmpeg
         run: make install
     
+
+      - name: Download MakeMKV source
+        run: |
+          curl -O https://www.makemkv.com/download/makemkv-oss-1.18.4.tar.gz
+          curl -O https://www.makemkv.com/download/makemkv-bin-1.18.4.tar.gz        
