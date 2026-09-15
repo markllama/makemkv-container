@@ -63,7 +63,9 @@ jobs:
             libx265-dev \
             libnuma-dev \
             libvpx-dev \
-            libopus-dev
+            libopus-dev \
+            libaom-dev \
+            libfdk-aac-dev
             
       - name: Clone ffmpeg repo
         run: git clone --depth=1 --single-branch https://git.ffmpeg.org/ffmpeg.git 
