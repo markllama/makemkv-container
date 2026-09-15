@@ -1,7 +1,11 @@
 # Create a build environment and build MakeMKV CLI
 #
+# - Fedora
 # echo "mark ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/mark
 # sudo dnf install --assumeyes ansible
+# - Debian
+# sudo apt-get update
+# sudo apt -y install locales=all ansible
 #
 - name: MakeMKV cli
   hosts: localhost
@@ -95,6 +99,7 @@
             cmd: "dnf clean packages"
           become: true
 
+      when: ansible_os_family == "Redhat"
       tags: devtools
 
     # ------------------------------------------------------------
