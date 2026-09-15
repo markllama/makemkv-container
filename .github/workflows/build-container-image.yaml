@@ -72,7 +72,7 @@ jobs:
       - name: Clone ffmpeg repo
         run: |
           git clone \
-            --depth=1
+            --depth=1 \
             --single-branch \
             --branch ${{env.FFMPEG_BRANCH}} \
             https://git.ffmpeg.org/ffmpeg.git 
