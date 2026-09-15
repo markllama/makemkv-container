@@ -14,12 +14,8 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     steps:
-      - run: echo Hello World
-
-      # Check Root Access
-
-      # Install build tools
-      - run: |
+      - name: Install Build Tools
+        run: |
           sudo apt-get install \
             build-essential \
             pkg-config \
@@ -31,7 +27,20 @@ jobs:
             qtbase5-dev \
             zlib1g-dev
 
-      # Install ffmpeg
-      - run: git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+      - name: Clone ffmpeg repo
+        run: git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
+      - name: Configure ffmpeg
+        working_directory: ffmpeg
+        run:
+          ./configure \
+            --prefix=/tmp/ffmpeg \
+            --enable-static \
+            --disable-shared \
+            --enable-pic \
+            --enable-libfdk-aac
+
+      - name: Build ffmpeg
+        working_directory: ffmpeg
+        run: make install
     
