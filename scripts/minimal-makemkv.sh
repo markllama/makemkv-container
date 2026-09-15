@@ -45,13 +45,17 @@ function main() {
 	    # Already in an unshare environment
 	    copy_model_tree ${SOURCE_ROOT} ${container}
 	fi
+
+	buildah config --workingdir / $container
 	
 	# add a volume to include the configuration file
 	# Leave the files in the default locations 
-	#buildah config --env MAKEMKV_KEY $container
+	buildah config --env 'MAKEMKV_KEY=' $container
 	buildah config --env "HOME=/" $container
 	buildah config --env "LD_LIBRARY_PATH=/usr/lib64:/usr/lib" $container
+
 	buildah config --volume /config $container
+
 	buildah config --volume /input $container
 	buildah config --volume /output $container
 
@@ -98,10 +102,13 @@ function copy_model_tree() {
     
     # Create volume mount points
     mkdir -p ${mountpoint}/tmp
-    mkdir -p ${mountpoint}/.MakeMKV
-    ln -s /config ${mountpoint}/.MakeMKV/settings.conf
+
     mkdir -p ${mountpoint}/input
     mkdir -p ${mountpoint}/output
+
+    # If you pass in the settings file in /config
+    mkdir -p ${mountpoint}/.MakeMKV
+    ln -s /config ${mountpoint}/.MakeMKV/settings.conf
 
     [ -z ${DEBUG} ] || (echo FULL ; cd ${mountpoint} ; pwd ;  find . -type f)
 
