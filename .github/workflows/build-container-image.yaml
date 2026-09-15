@@ -1,0 +1,10 @@
+---
+name: build-makemkvcon
+run-name: Build MakeMKV CLI Software Container
+on: [ workflow-dispatch ]
+jobs:
+  build-binary:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Hello World
+    
