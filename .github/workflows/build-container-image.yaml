@@ -14,9 +14,19 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Build Tools
+      - name: Update package metadata
         run: |
-          sudo apt-get install \
+          sudo apt -y update
+
+      - name: Install build tools
+        run: |
+          sudo apt -y install \
+            build-essential \
+            pkg-config
+
+      - name: Install Libraries for makemkvcon
+        run: |
+          sudo apt -y install \
             build-essential \
             pkg-config \
             libc6-dev \
@@ -27,6 +37,34 @@ jobs:
             qtbase5-dev \
             zlib1g-dev
 
+      - name: Install libraries for ffmpeg
+        run: |
+          sudo apt -y install \
+            yasm \
+            nasm \
+            curl \
+            tar \
+            xz-utils \
+            gpg \
+            ca-certificates \
+            libass-dev \
+            libfreetype6-dev \
+            libgnutls28-dev \
+            libmp3lame-dev \
+            libsdl2-dev \
+            libtool \
+            libva-dev \
+            libvdpau-dev \
+            libvorbis-dev \
+            libxcb1-dev \
+            libxcb-shm0-dev \
+            libxcb-xfixes0-dev \
+            libx264-dev \
+            libx265-dev \
+            libnuma-dev \
+            libvpx-dev \
+            libopus-dev
+            
       - name: Clone ffmpeg repo
         run: git clone --depth=1 --single-branch https://git.ffmpeg.org/ffmpeg.git 
 
