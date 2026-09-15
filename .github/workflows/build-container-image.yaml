@@ -66,7 +66,7 @@ jobs:
             libfdk-aac-dev
             
       - name: Clone ffmpeg repo
-        run: git clone --depth=1 --single-branch https://git.ffmpeg.org/ffmpeg.git 
+        run: git clone --depth=1 --single-branch --branch release/8.1 https://git.ffmpeg.org/ffmpeg.git 
 
       - name: Configure ffmpeg
         working-directory: ffmpeg
@@ -82,8 +82,27 @@ jobs:
         working-directory: ffmpeg
         run: make install
     
-
       - name: Download MakeMKV source
         run: |
           curl -O https://www.makemkv.com/download/makemkv-oss-1.18.4.tar.gz
+
+      - name: Unpack MakeMKV source
+        run: |
+          tar -xf makemkv-oss-1.18.4.tar.gz
+
+      # configure
+
+      # build
+
+      # install
+
+      
+      - name: Download MakeMKV binaries
+        run: |
           curl -O https://www.makemkv.com/download/makemkv-bin-1.18.4.tar.gz        
+
+      - name: Unpack MakeMKV bin
+        run: |
+          tar -xf makemkv-bin-1.18.4.tar.gz
+
+      
