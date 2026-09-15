@@ -68,7 +68,13 @@ jobs:
             libopus-dev \
             libaom-dev \
             libfdk-aac-dev
-            
+
+      - name: Install container build/run tools
+        run: |
+          sudo apt -y install |
+            podman \
+            buildah
+
       - name: Clone ffmpeg repo
         run: |
           git clone \
