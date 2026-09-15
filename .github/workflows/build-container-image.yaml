@@ -28,11 +28,11 @@ jobs:
             zlib1g-dev
 
       - name: Clone ffmpeg repo
-        run: git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+        run: git clone --depth=1 --single-branch https://git.ffmpeg.org/ffmpeg.git 
 
       - name: Configure ffmpeg
         working-directory: ffmpeg
-        run:
+        run: |
           ./configure \
             --prefix=/tmp/ffmpeg \
             --enable-static \
