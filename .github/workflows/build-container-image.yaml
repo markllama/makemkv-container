@@ -4,6 +4,10 @@ run-name: Build MakeMKV CLI Software Container
 on: [ workflow_dispatch ]
 
 # variables
+env:
+  MAKEMKV_VERSION: 1.18.4
+  FMPEG_BRANCH: release/8.1.2
+
 # makemkv:
 #   version: 1.18.4
 #   components:
@@ -66,7 +70,12 @@ jobs:
             libfdk-aac-dev
             
       - name: Clone ffmpeg repo
-        run: git clone --depth=1 --single-branch --branch release/8.1 https://git.ffmpeg.org/ffmpeg.git 
+        run: |
+          git clone \
+            --depth=1
+            --single-branch \
+            --branch ${{env.FFMPEG_BRANCH}} \
+            https://git.ffmpeg.org/ffmpeg.git 
 
       - name: Configure ffmpeg
         working-directory: ffmpeg
@@ -84,15 +93,15 @@ jobs:
     
       - name: Download MakeMKV source
         run: |
-          curl -O https://www.makemkv.com/download/makemkv-oss-1.18.4.tar.gz
+          curl -O https://www.makemkv.com/download/makemkv-oss-${{env.MAKEMKV_VERSION}}.tar.gz
 
       - name: Unpack MakeMKV source
         run: |
-          tar -xf makemkv-oss-1.18.4.tar.gz
+          tar -xf makemkv-oss-${{env.MAKEMKV_VERSION}}.tar.gz
 
       # configure
       - name: Configure MakeMKV CLI build
-        working-directory: makemkv-oss-1.18.4
+        working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
         run: |
           PKG_CONFIG_PATH=/tmp/ffmpeg/lib/pkgconfig ./configure \
             --disable-shared \
@@ -103,25 +112,25 @@ jobs:
 
       # build
       - name: Build MakeMKV from sources
-        working-directory: makemkv-oss-1.18.4
+        working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
         run: make
 
       # install
       - name: Install built makemkvcon tools
-        working-directory: makemkv-oss-1.18.4
+        working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
         run: make -n install
 
       - name: Download MakeMKV binaries
         run: |
-          curl -O https://www.makemkv.com/download/makemkv-bin-1.18.4.tar.gz        
+          curl -O https://www.makemkv.com/download/makemkv-bin-${{env.MAKEMKV_VERSION}}.tar.gz        
 
       - name: Unpack MakeMKV bin
         run: |
-          tar -xf makemkv-bin-1.18.4.tar.gz
+          tar -xf makemkv-bin-${{env.MAKEMKV_VERSION}}.tar.gz
 
       # install
       - name: Install makemkvcon
-        working-directory: makemkv-oss-1.18.4
+        working-directory: makemkv-bin-${{env.MAKEMKV_VERSION}}
         run: make -n install
 
       
