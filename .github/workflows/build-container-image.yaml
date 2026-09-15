@@ -91,12 +91,26 @@ jobs:
           tar -xf makemkv-oss-1.18.4.tar.gz
 
       # configure
+      - name: Configure MakeMKV CLI build
+        working-directory: makemkv-oss-1.18.4
+        run: |
+          PKG_CONFIG_PATH=/tmp/ffmpeg/lib/pkgconfig ./configure \
+            --disable-shared \
+            --enable-static \
+            --disable-shared \
+            --disable-gui \
+            --disable-qt5
 
       # build
+      - name: Build MakeMKV from sources
+        working-directory: makemkv-oss-1.18.4
+        run: make
 
       # install
+      - name: Install built makemkvcon tools
+        working-directory: makemkv-oss-1.18.4
+        run: make -n install
 
-      
       - name: Download MakeMKV binaries
         run: |
           curl -O https://www.makemkv.com/download/makemkv-bin-1.18.4.tar.gz        
@@ -104,5 +118,10 @@ jobs:
       - name: Unpack MakeMKV bin
         run: |
           tar -xf makemkv-bin-1.18.4.tar.gz
+
+      # install
+      - name: Install makemkvcon
+        working-directory: makemkv-oss-1.18.4
+        run: make -n install
 
       
