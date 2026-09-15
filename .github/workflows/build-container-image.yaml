@@ -71,7 +71,7 @@ jobs:
 
       - name: Install container build/run tools
         run: |
-          sudo apt -y install |
+          sudo apt -y install \
             podman \
             buildah
 
