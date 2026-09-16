@@ -3,7 +3,7 @@
 - name: Install Build Tools
   apt:
     name:
-      - build-esssentials
+      - build-essential
       - pkg-config
     state: present
   become: true
