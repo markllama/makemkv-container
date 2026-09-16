@@ -49,4 +49,5 @@
       - libaom-dev 
       - libfdk-aac-dev
     state: present
+  become: true
 
