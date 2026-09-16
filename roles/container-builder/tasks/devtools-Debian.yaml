@@ -6,6 +6,7 @@
       - build-esssential
       - pkg-config
     state: present
+  become: true
 
 - name: Install Libraries for makemkv
   apt:
@@ -18,4 +19,5 @@
       - qtbase5-dev \
       - zlib1g-dev
     state: present
+  become: true
 
