@@ -18,6 +18,9 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     steps:
+      - name: Clone workspace for makemkv-container
+        uses: actions/checkout@v7
+      
       - name: Update package metadata
         run: |
           sudo apt -y update
