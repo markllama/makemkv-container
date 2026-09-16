@@ -1,5 +1,44 @@
 ---
 # Install tools for RedHat family systems
-- name: This Is RedHat
-  debug:
-    msg: This is RedHat
+- name: Install Development Tools
+  dnf5:
+    name: "@Development Tools"
+    state: present
+  become: true
+          
+- name: Install required packages from fedora repos
+  dnf5:
+    name:
+      - openssl-devel
+      - expat-devel
+      - mesa-libGL-devel
+      - qt5-qtbase-devel
+      - zlib-devel
+      - distribution-gpg-keys
+    state: present
+  become: true
+  
+- name: Import RPM Fusion Free GPG Key (from distribution-gpg-keys)
+  rpm_key:
+    state: present
+    key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-{{ ansible_distribution_version }}
+  become: true
+
+- name: Enable the RPM Fusion repository
+  dnf5:
+    name: "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_version }}.noarch.rpm"
+    state: present
+  become: true
+  when: ansible_distribution == 'Fedora'      
+            
+- name: Install ffmpeg packages from RPM Fusion
+  dnf5:
+    name:
+      - ffmpeg-devel
+    state: present
+  become: true
+
+- name: Clean DNF Cache -  RPM fusion in cache causes problems
+  shell:
+    cmd: "dnf clean packages"
+  become: true
