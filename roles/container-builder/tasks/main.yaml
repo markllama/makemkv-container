@@ -4,4 +4,36 @@
 - name: "Prepare Build Environment on {{ ansible_os_family }}"
   include_tasks: "devtools-{{ ansible_os_family }}.yaml"
 
+- name: "Provide ffmpeg for build on {{ ansible_os_family }}"
+  include_tasks: "ffmpeg-{{ ansible_os_family }}.yaml"
 
+- name: "Build ffmpeg"
+  import_tasks: "ffmpeg.yaml"
+  tags: ffmpeg
+
+- name: "Create a place for building stuff"
+  file:
+    path: "{{ ansible_env.PWD }}/build/{{ item }}"
+    state: directory
+    recurse: true
+  loop:
+#    - tarballs
+    - unpack
+
+#- name: Download MakeMKV Tarballs
+#  get_url:
+#    url: "https://www.makemkv.com/download/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+#    dest: "{{ ansible_env.PWD }}/build/tarballs"
+#  loop:
+#    - oss
+#    - bin
+
+- name: Unpack MakeMKV Tarballs
+  unarchive:
+#    src: "{{ ansible_env.PWD }}/build/tarballs/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+    src: "https://www.makemkv.com/download/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
+    dest: "{{ ansible_env.PWD }}/build/unpack/"
+    remote_src: true
+  loop:
+    - oss
+    - bin

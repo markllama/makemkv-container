@@ -1,0 +1,59 @@
+---
+- name: Install tools for building ffmpeg
+  apt:
+    name:
+      - yasm
+      - nasm
+      - curl
+      - tar
+      - xz-utils
+      - gpg
+      - ca-certificates
+    state: present
+  become: true
+      
+- name: Install libraries for ffmpeg
+  apt:
+    name:
+      - libass-dev
+      - libfreetype6-dev
+      - libgnutls28-dev
+      - libmp3lame-dev
+      - libsdl2-dev
+      - libtool
+      - libva-dev
+      - libvdpau-dev
+      - libvorbis-dev
+      - libxcb1-dev
+      - libxcb-shm0-dev
+      - libxcb-xfixes0-dev
+      - libx264-dev
+      - libx265-dev
+      - libnuma-dev
+      - libvpx-dev
+      - libopus-dev
+      - libaom-dev 
+    state: present
+  become: true
+
+# Required for libfdk-aac-dev
+- name: Enable non-free repos
+  lineinfile:
+    path: /etc/apt/sources.list.d/debian.sources
+    regexp: '^Components: main'
+    line: 'Components: main non-free'
+    insertafter: "^Suites {{ ansible_distribution_release }} {{ ansible_distribution_release }}-updates"
+    firstmatch: true
+  become: true
+
+- name: Update from non-free as well
+  apt:
+    update_cache: true
+  become: true
+
+- name: Install libraries for ffmpeg
+  apt:
+    name:
+      - libfdk-aac-dev
+    state: present
+  become: true

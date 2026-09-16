@@ -1,0 +1,20 @@
+---
+- name: Install tools for building ffmpeg
+  dnf5:
+    name:
+      - yasm
+      - nasm
+      - curl
+      - tar
+      - xz
+      - gpg
+      - ca-certificates
+    state: present
+  become: true
+
+- name: Install libfdk-aac development packages
+  dnf5:
+    name:
+      fdk-aac-free-devel
+    state: present
+  become: true

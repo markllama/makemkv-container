@@ -1,0 +1,32 @@
+---
+
+- name: Clone ffmpeg repository
+  git:
+    repo: https://git.ffmpeg.org/ffmpeg.git
+    version: "release/{{ ffmpeg.version }}"
+    clone: true
+    single_branch: true
+    dest: "{{ ansible_env.PWD }}/build/ffmpeg"
+
+- name: Configure ffmpeg
+  shell:
+    cmd: |
+      ./configure \
+        --prefix={{ ansible_env.PWD }}/usr \
+        --enable-static \
+        --disable-shared \
+        --enable-libfdk-aac
+    chdir: "{{ ansible_env.PWD }}/build/ffmpeg"
+    creates: "{{ ansible_env.PWD }}/build/ffmpeg/config.h"
+
+- name: Build ffmpeg
+  shell:
+    cmd: make
+    chdir: "{{ ansible_env.PWD }}/build/ffmpeg"
+    creates: "{{ ansible_env.PWD }}/build/ffmpeg/ffmpeg"
+
+- name: Install ffmpeg
+  shell:
+    cmd: make install
+    chdir: "{{ ansible_env.PWD }}/build/ffmpeg"
+    creates: "{{ ansible_env.PWD }}/usr/bin/ffmpeg"

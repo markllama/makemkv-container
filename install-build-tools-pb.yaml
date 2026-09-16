@@ -6,5 +6,11 @@
   hosts: localhost
   connection: local
 
+  vars:
+    makemkv:
+      version: 1.18.4
+    ffmpeg:
+      version: 8.1
+
   roles:
     - container-builder
