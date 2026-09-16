@@ -1,4 +1,6 @@
 ---
+- name: "Install tools for ffmpeg build on {{ ansible_os_family }}"
+  include_tasks: "ffmpeg-{{ ansible_os_family }}.yaml"
 
 - name: Clone ffmpeg repository
   git:
