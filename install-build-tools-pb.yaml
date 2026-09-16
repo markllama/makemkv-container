@@ -1,0 +1,10 @@
+---
+#
+# Install build tools on a Debian or RedHat family system
+#
+- name: Prepare Build Environment
+  hosts: localhost
+  connection: local
+
+  roles:
+    - container-builder
