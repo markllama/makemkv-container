@@ -21,10 +21,6 @@ jobs:
       - name: Clone workspace for makemkv-container
         uses: actions/checkout@v7
 
-      - name: Check working directory and contents
-        run: |
-          pwd ; ls
-
       - name: Update package metadata
         run: |
           sudo apt -y update
@@ -35,6 +31,9 @@ jobs:
             ansible \
             podman \
             buildah
+
+      - name: Test Ansible
+        run: ansible localhost -m setup
 
       # - name: Install build tools
       #   run: |
