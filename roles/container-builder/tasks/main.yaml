@@ -46,22 +46,22 @@
       shell:
         chdir: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}"
         cmd: ./configure --disable-gui
-        creates: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss/{{ makemkv.version}}/config.log"
+        creates: "config.log"
 
-#    - name: Create space for EULA
-#      file:
-#        path: "{{ ansible_env.PWD }}/src/tmp"
-#        state: directory
+    - name: Create space for EULA
+      file:
+        path: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}/tmp"
+        state: directory
 
     - name: Build MakeMKV linux files
       make:
         chdir: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}"
             
-#    - name: Accept EULA License
-#      copy:
-#        dest: "{{ ansible_env.PWD }}/src/tmp/eula_accepted"
-#        content: |
-#          accepted
+    - name: Accept EULA License
+      copy:
+        dest: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}/tmp/eula_accepted"
+        content: |
+          accepted
 
   tags: build
 
@@ -82,3 +82,5 @@
       loop:
         - oss
         - bin
+
+  tags: model
