@@ -79,4 +79,9 @@
         - oss
         - bin
 
+    - name: Show current model contents
+      shell:
+        cmd: find * -type f
+        chdir: "{{ ansible_env.PWD }}/build/model"
+
   tags: model
