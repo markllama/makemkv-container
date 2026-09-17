@@ -104,5 +104,4 @@
       debug:
         msg: "{{ model2.stdout_lines }}"
 
-    
   tags: model
