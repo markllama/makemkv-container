@@ -45,6 +45,7 @@
     insertafter: "^Suites {{ ansible_distribution_release }} {{ ansible_distribution_release }}-updates"
     firstmatch: true
   become: true
+  when: ansible_distribution == "Debian"
 
 - name: Update from non-free as well
   apt:
