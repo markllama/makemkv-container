@@ -16,6 +16,7 @@
       - qt5-qtbase-devel
       - zlib-devel
       - distribution-gpg-keys
+      - make
     state: present
   become: true
   

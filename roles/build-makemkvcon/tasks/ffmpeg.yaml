@@ -14,7 +14,7 @@
   shell:
     cmd: |
       ./configure \
-        --prefix={{ ansible_env.PWD }}/usr \
+        --prefix={{ ansible_env.PWD }}/build/usr \
         --enable-static \
         --disable-shared \
         --enable-libfdk-aac
@@ -31,4 +31,4 @@
   shell:
     cmd: make install
     chdir: "{{ ansible_env.PWD }}/build/ffmpeg"
-    creates: "{{ ansible_env.PWD }}/usr/bin/ffmpeg"
+    creates: "{{ ansible_env.PWD }}/build/usr/bin/ffmpeg"
