@@ -15,7 +15,7 @@ SCRIPT=$0
 OPT_SPEC='a:b:c:s:r:'
 
 DEFAULT_SERVICE="makemkvcon"
-DEFAULT_SOURCE_ROOT="model"
+DEFAULT_SOURCE_ROOT="build/model"
 DEFAULT_AUTHOR="Mark Lamourine <markllama@gmail.com>"
 DEFAULT_BUILDER="Mark Lamourine <markllama@gmail.com>"
 DEFAULT_BASE=scratch

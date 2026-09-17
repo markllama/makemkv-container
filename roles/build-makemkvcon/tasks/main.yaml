@@ -105,3 +105,9 @@
         msg: "{{ model2.stdout_lines }}"
 
   tags: model
+
+- name: Create Container
+  block:
+    - name: Create Container with Buildah
+      shell:
+        cmd: scripts/minimal-makemkv.sh

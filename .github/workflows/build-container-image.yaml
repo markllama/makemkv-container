@@ -33,115 +33,12 @@ jobs:
         run: |
           ansible-playbook build-makemkvcon-pb.yaml
 
-      # - name: Install build tools
-      #   run: |
-      #     sudo apt -y install \
-      #       build-essential \
-      #       pkg-config
+      # And build makemkvcon - separate?
+      #
+      # Now create a container from build/model
 
-      # - name: Install Libraries for makemkvcon
-      #   run: |
-      #     sudo apt -y install \
-      #       libc6-dev \
-      #       libssl-dev \
-      #       libexpat1-dev \
-      #       libavcodec-dev \
-      #       libgl1-mesa-dev \
-      #       qtbase5-dev \
-      #       zlib1g-dev
-
-      # - name: Install libraries for ffmpeg
-      #   run: |
-      #     sudo apt -y install \
-      #       yasm \
-      #       nasm \
-      #       curl \
-      #       tar \
-      #       xz-utils \
-      #       gpg \
-      #       ca-certificates \
-      #       libass-dev \
-      #       libfreetype6-dev \
-      #       libgnutls28-dev \
-      #       libmp3lame-dev \
-      #       libsdl2-dev \
-      #       libtool \
-      #       libva-dev \
-      #       libvdpau-dev \
-      #       libvorbis-dev \
-      #       libxcb1-dev \
-      #       libxcb-shm0-dev \
-      #       libxcb-xfixes0-dev \
-      #       libx264-dev \
-      #       libx265-dev \
-      #       libnuma-dev \
-      #       libvpx-dev \
-      #       libopus-dev \
-      #       libaom-dev \
-      #       libfdk-aac-dev
-
-      # - name: Clone ffmpeg repo
-      #   run: |
-      #     git clone \
-      #       --depth=1 \
-      #       --single-branch \
-      #       --branch ${{env.FFMPEG_BRANCH}} \
-      #       https://git.ffmpeg.org/ffmpeg.git 
-
-      # - name: Configure ffmpeg
-      #   working-directory: ffmpeg
-      #   run: |
-      #     ./configure \
-      #       --prefix=/tmp/ffmpeg \
-      #       --enable-static \
-      #       --disable-shared \
-      #       --enable-pic \
-      #       --enable-libfdk-aac
-
-      # - name: Build ffmpeg
-      #   working-directory: ffmpeg
-      #   run: make install
-    
-      # - name: Download MakeMKV source
-      #   run: |
-      #     curl -O https://www.makemkv.com/download/makemkv-oss-${{env.MAKEMKV_VERSION}}.tar.gz
-
-      # - name: Unpack MakeMKV source
-      #   run: |
-      #     tar -xf makemkv-oss-${{env.MAKEMKV_VERSION}}.tar.gz
-
-      # # configure
-      # - name: Configure MakeMKV CLI build
-      #   working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
-      #   run: |
-      #     PKG_CONFIG_PATH=/tmp/ffmpeg/lib/pkgconfig ./configure \
-      #       --disable-shared \
-      #       --enable-static \
-      #       --disable-shared \
-      #       --disable-gui \
-      #       --disable-qt5
-
-      # # build
-      # - name: Build MakeMKV from sources
-      #   working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
-      #   run: make
-
-      # # install
-      # - name: Install built makemkvcon tools
-      #   working-directory: makemkv-oss-${{env.MAKEMKV_VERSION}}
-      #   run: make -n install
-
-      # - name: Download MakeMKV binaries
-      #   run: |
-      #     curl -O https://www.makemkv.com/download/makemkv-bin-${{env.MAKEMKV_VERSION}}.tar.gz        
-
-      # - name: Unpack MakeMKV bin
-      #   run: |
-      #     tar -xf makemkv-bin-${{env.MAKEMKV_VERSION}}.tar.gz
-
-      # # install
-      # - name: Install makemkvcon
-      #   working-directory: makemkv-bin-${{env.MAKEMKV_VERSION}}
-      #   run: make -n install
+      - name: Create Container Image from Model
+        run: |
+          scripts/minimal-makemkv.sh
 
       
