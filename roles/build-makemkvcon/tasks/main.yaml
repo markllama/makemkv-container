@@ -89,4 +89,20 @@
       debug:
         msg: "{{ model1.stdout_lines }}"
 
+    - name: Collect shared libraries
+      shell:
+        cmd: |
+          scripts/collect-shared-libraries.sh
+
+    - name: Scan current model contents
+      shell:
+        cmd: find * -type f
+        chdir: "{{ ansible_env.PWD }}/build/model"
+      register: model2
+
+    - name: Report current model contents
+      debug:
+        msg: "{{ model2.stdout_lines }}"
+
+    
   tags: model
