@@ -9,20 +9,9 @@
 
 - name: "Create a place for building stuff"
   file:
-    path: "{{ ansible_env.PWD }}/build/{{ item }}"
+    path: "{{ ansible_env.PWD }}/build/unpack"
     state: directory
     recurse: true
-  loop:
-#    - tarballs
-    - unpack
-
-#- name: Download MakeMKV Tarballs
-#  get_url:
-#    url: "https://www.makemkv.com/download/makemkv-{{ item }}-{{ makemkv.version }}.tar.gz"
-#    dest: "{{ ansible_env.PWD }}/build/tarballs"
-#  loop:
-#    - oss
-#    - bin
 
 - name: Unpack MakeMKV Tarballs
   unarchive:
@@ -50,8 +39,11 @@
 
     - name: Create space for EULA
       file:
-        path: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}/tmp"
+        path: "{{ ansible_env.PWD }}/build/unpack/makemkv-{{ item }}-{{ makemkv.version }}/tmp"
         state: directory
+      loop:
+        - oss
+        - bin
 
     - name: Build MakeMKV linux files
       make:
