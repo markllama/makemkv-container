@@ -59,9 +59,12 @@
             
     - name: Accept EULA License
       copy:
-        dest: "{{ ansible_env.PWD }}/build/unpack/makemkv-oss-{{ makemkv.version }}/tmp/eula_accepted"
+        dest: "{{ ansible_env.PWD }}/build/unpack/makemkv-{{ item }}-{{ makemkv.version }}/tmp/eula_accepted"
         content: |
           accepted
+      loop:
+        - oss
+        - bin
 
   tags: build
 
@@ -77,7 +80,7 @@
         target: install
         params:
           DESTDIR: "{{ ansible_env.PWD }}/model"
-          PREFIX: "usr"
+          PREFIX: "/usr"
         chdir: "{{ ansible_env.PWD }}/build/unpack/makemkv-{{ item }}-{{ makemkv.version }}"
       loop:
         - oss
