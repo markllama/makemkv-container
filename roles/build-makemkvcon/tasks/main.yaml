@@ -79,9 +79,14 @@
         - oss
         - bin
 
-    - name: Show current model contents
+    - name: Scan current model contents
       shell:
         cmd: find * -type f
         chdir: "{{ ansible_env.PWD }}/build/model"
+      register: model1
+
+    - name: Report current model contents
+      debug:
+        msg: "{{ model1.stdout_lines }}"
 
   tags: model
