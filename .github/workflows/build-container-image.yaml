@@ -8,8 +8,12 @@ env:
   MAKEMKV_VERSION: 1.18.4
   FFMPEG_BRANCH: release/8.1
 
+  AUTHOR: Mark Lamourine <mark@llamatek.dev>
+  BUILDER: Mark Lamourine <mark@llamatek.dev>
+  
   IMAGE_NAME: makemkvcon
   IMAGE_TAGS: latest #${{ github.sha }}
+
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
@@ -48,26 +52,43 @@ jobs:
       #
       # Now create a container from build/model
 
-      - name: Create Container Image from Model
-        run: |
-          scripts/minimal-makemkv.sh
+#      - name: Create Container Image from Model
+#        run: |
+#          scripts/minimal-makemkv.sh
 
-      # - name: Create Container Image
-      #   uses: redhat-actions/buildah-build@v3
-      #   with:
-      #     base-image: scratch
-      #     image: ${{ env.IMAGE_NAME }}
-      #     content: |
-      #       build/model/
-      #     entrypoint: foo
-      #     port: |
-      #       foo
-      #     vol:
-      #       foo
-      #     envs: |
-      #       foo=bar
-      #     squash: true
-      #     oci: true
+      - name: Create Container Image
+        uses: redhat-actions/buildah-build@v3
+        with:
+          base-image: scratch
+          image: ${{ env.IMAGE_NAME }}
+          content: |
+            build/model/
+          entrypoint: foo
+          workdir: /
+          port: |
+            foo
+          volumes: |
+            /config
+            /input
+            /output
+          envs: |
+            MAKEMKV_KEY=
+            HOME=/
+            LD_LIBRARY_PATH=/usr/lib64:/usr/lib
+          tags: |
+            None
+
+          author: ${{ AUTHOR }}
+          created-by: ${{ BUILDER }}
+
+          labels: |
+            None
+          annotations:
+            description=MakeMKV ${{ MAKEMKV_VERSION }}
+            license=Copyright (C) 2007-2025 GuinpinSoft inc
+
+          squash: true
+          oci: true
         
       - name: Confirm container image creation
         run:
