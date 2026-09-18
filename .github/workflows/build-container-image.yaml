@@ -78,13 +78,13 @@ jobs:
           tags: |
             None
 
-          author: ${{ AUTHOR }}
-          created-by: ${{ BUILDER }}
+          author: ${{ env.AUTHOR }}
+          created-by: ${{ env.BUILDER }}
 
           labels: |
             None
           annotations:
-            description=MakeMKV ${{ MAKEMKV_VERSION }}
+            description=MakeMKV ${{ env.MAKEMKV_VERSION }}
             license=Copyright (C) 2007-2025 GuinpinSoft inc
 
           squash: true
