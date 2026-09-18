@@ -88,8 +88,3 @@ jobs:
           password: ${{ env.REGISTRY_PASSWORD }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAGS }} 
-
-    - name: Buildah Action
-      uses: redhat-actions/buildah-build@v3
-      with:
-        image: my-new-image
