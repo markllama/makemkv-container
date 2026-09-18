@@ -13,6 +13,7 @@ env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
+#  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
   contents: read
@@ -51,20 +52,44 @@ jobs:
         run: |
           scripts/minimal-makemkv.sh
 
+      # - name: Create Container Image
+      #   uses: redhat-actions/buildah-build@v3
+      #   with:
+      #     base-image: scratch
+      #     image: ${{ env.IMAGE_NAME }}
+      #     content: |
+      #       build/model/
+      #     entrypoint: foo
+      #     port: |
+      #       foo
+      #     vol:
+      #       foo
+      #     envs: |
+      #       foo=bar
+      #     squash: true
+      #     oci: true
+        
       - name: Confirm container image creation
         run:
           buildah images
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v4
+      #   with:
+      #     registry: ${{ env.IMAGE_REGISTRY }}
+      #     username: ${{ env.REGISTRY_USER }}
+      #     password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Push new image to registry
         uses: redhat-actions/push-to-registry@v3
         with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAGS }} 
 
+    - name: Buildah Action
+      uses: redhat-actions/buildah-build@v3
+      with:
+        image: my-new-image
