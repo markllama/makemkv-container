@@ -74,7 +74,10 @@ function main() {
 	# # Save the container to an image
 	buildah commit --squash $container $SERVICE
 
-	buildah tag localhost/makemkvcon quay.io/markllama/makemkvcon
+	# name for quay registry
+	buildah tag localhost/makemkvcon quay.io/markllama/makemkvcon:latest
+	# tag for github registry
+	buildah tag localhost/makemkvcon ghcr.io/markllama/makemkvcon:latest
 
 	podman rm ${SERVICE}
 
