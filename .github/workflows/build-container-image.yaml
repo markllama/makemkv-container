@@ -63,14 +63,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           content: |
             build/model/
-          entrypoint: foo
           workdir: /
-          port: |
-            foo
-          volumes: |
-            /config
-            /input
-            /output
           envs: |
             MAKEMKV_KEY=
             HOME=/
@@ -78,11 +71,14 @@ jobs:
           tags: |
             None
 
+          extra-args: |
+            --volume /config
+            --volume /input
+            --volume /output
+            
           author: ${{ env.AUTHOR }}
           created-by: ${{ env.BUILDER }}
 
-          labels: |
-            None
           annotations:
             description=MakeMKV ${{ env.MAKEMKV_VERSION }}
             license=Copyright (C) 2007-2025 GuinpinSoft inc
