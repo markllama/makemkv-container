@@ -76,8 +76,8 @@ jobs:
             --volume /input
             --volume /output
             
-          author: ${{ env.AUTHOR }}
-          created-by: ${{ env.BUILDER }}
+          #author: ${{ env.AUTHOR }}
+          #created-by: ${{ env.BUILDER }}
 
           annotations:
             description=MakeMKV ${{ env.MAKEMKV_VERSION }}
