@@ -1,4 +1,4 @@
 #!/usr/bin/make -f
 
 clean:
-	rm -rf build usr model TARBALLS
+	rm -rf build usr model TARBALLS src
