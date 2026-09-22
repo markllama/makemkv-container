@@ -9,7 +9,11 @@
 
 function main() {
 
-    #dnf install -yes --installroot ${MODEL_ROOT} -- setopt install_weak_deps=false 
+    #dnf install -yes --installroot ${MODEL_ROOT} -- setopt install_weak_deps=false
+    [ -d ${MODEL_ROOT}/usr/bin ] || mkdir -p ${MODEL_ROOT}/usr/bin
+    [ -d ${MODEL_ROOT}/usr/lib ] || mkdir -p ${MODEL_ROOT}/usr/lib
+    [ -d ${MODEL_ROOT}/usr/lib64 ] || mkdir -p ${MODEL_ROOT}/usr/lib64
+    
     [ -s ${MODEL_ROOT}/bin ] || ln -s usr/bin ${MODEL_ROOT}/bin
     [ -s ${MODEL_ROOT}/lib ] || ln -s usr/lib ${MODEL_ROOT}/lib64
     [ -s ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
@@ -19,7 +23,7 @@ function main() {
 
     # Add debugging tools: bash and ldd
     cp /usr/bin/bash ${MODEL_ROOT}/usr/bin/bash
-    ln -s bash ${MODEL_ROOT}/usr/bin/sh
+    [ -s ${MODEL_ROOT}/usr/bin/sh ] || ln -s bash ${MODEL_ROOT}/usr/bin/sh
     cp /usr/bin/ls ${MODEL_ROOT}/usr/bin/ls
     cp /usr/bin/ldd ${MODEL_ROOT}/usr/bin/ldd
 
@@ -31,7 +35,7 @@ function main() {
 
     mkdir -p ${PACKAGE_ROOT}
     mkdir -p ${UNPACK_ROOT}
-#    [ -s ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
+    [ -s ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
     [ -s ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
  
     # Accumulate the list of packages that provide the required libraries
@@ -54,11 +58,16 @@ function main() {
     done
     
     # Copy the required library files to the model
+    local library_file
     for library_file in $libraries ; do
-	cp ${UNPACK_ROOT}/${library_file} ${MODEL_ROOT}/${library_file}
+	#	echo $library_file
+	local library_dir=$(dirname ${library_file})
+	[ -d ${library_dir} -o -s ${library_dir} ] || mkdir -p ${library_dir}
+	echo cp ${UNPACK_ROOT}/${library_file} ${MODEL_ROOT}/${library_dir}
     done
 
-    cp ${UNPACK_ROOT}/lib64/ld-linux-* ${MODEL_ROOT}/lib64
+    # Flatten lib64 libraries to make dynamic linking simpler in the container
+    echo cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64
     
 }
 
