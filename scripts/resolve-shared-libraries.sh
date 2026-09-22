@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 : BUILD_ROOT=${BUILD_ROOT:=${PWD}/build}
 : MODEL_ROOT=${MODEL_ROOT:=${BUILD_ROOT}/model}
@@ -14,16 +15,16 @@ function main() {
     [ -d ${MODEL_ROOT}/usr/lib ] || mkdir -p ${MODEL_ROOT}/usr/lib
     [ -d ${MODEL_ROOT}/usr/lib64 ] || mkdir -p ${MODEL_ROOT}/usr/lib64
     
-    [ -s ${MODEL_ROOT}/bin ] || ln -s usr/bin ${MODEL_ROOT}/bin
-    [ -s ${MODEL_ROOT}/lib ] || ln -s usr/lib ${MODEL_ROOT}/lib64
-    [ -s ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
+    [ -L ${MODEL_ROOT}/bin ] || ln -s usr/bin ${MODEL_ROOT}/bin
+    [ -L ${MODEL_ROOT}/lib ] || ln -s usr/lib ${MODEL_ROOT}/lib64
+    [ -L ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
     
     rm -rf ${PACKAGE_ROOT}/*
     rm -rf ${UNPACK_ROOT}/*
 
     # Add debugging tools: bash and ldd
     cp /usr/bin/bash ${MODEL_ROOT}/usr/bin/bash
-    [ -s ${MODEL_ROOT}/usr/bin/sh ] || ln -s bash ${MODEL_ROOT}/usr/bin/sh
+    [ -L ${MODEL_ROOT}/usr/bin/sh ] || ln -s bash ${MODEL_ROOT}/usr/bin/sh
     cp /usr/bin/ls ${MODEL_ROOT}/usr/bin/ls
     cp /usr/bin/ldd ${MODEL_ROOT}/usr/bin/ldd
 
@@ -35,8 +36,8 @@ function main() {
 
     mkdir -p ${PACKAGE_ROOT}
     mkdir -p ${UNPACK_ROOT}
-    [ -s ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
-    [ -s ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
+    [ -L ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
+    [ -L ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
  
     # Accumulate the list of packages that provide the required libraries
     declare -a packages
@@ -62,13 +63,17 @@ function main() {
     for library_file in $libraries ; do
 	#	echo $library_file
 	local library_dir=$(dirname ${library_file})
-	[ -d ${library_dir} -o -s ${library_dir} ] || mkdir -p ${library_dir}
-	echo cp ${UNPACK_ROOT}/${library_file} ${MODEL_ROOT}/${library_dir}
+	[ -d ${MODEL_ROOT}${library_dir} -o -L ${MODEL_ROOT}${library_dir} ] || mkdir -p ${MODEL_ROOT}${library_dir}
+	cp ${UNPACK_ROOT}${library_file} ${MODEL_ROOT}${library_dir}
     done
 
     # Flatten lib64 libraries to make dynamic linking simpler in the container
-    echo cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64
-    
+    cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
+}
+
+# make it easier to use pkg specific variant functions
+function set_os_id() {
+    eval "export (grep -e '^ID=' /etc/os-release)"
 }
 
 function find_dynamic_binaries() {
