@@ -4,78 +4,108 @@ set -e
 : BUILD_ROOT=${BUILD_ROOT:=${PWD}/build}
 : MODEL_ROOT=${MODEL_ROOT:=${BUILD_ROOT}/model}
 : LIBRARY_PATH=${LIBRARY_PATH:=${MODEL_ROOT}/usr/lib:${MODEL_ROOT}/usr/lib64}
-: PACKAGE_ROOT=${PACKAGE_ROOT:=${BUILD_ROOT}/rpms}
+: PACKAGE_ROOT=${PACKAGE_ROOT:=${BUILD_ROOT}/packages}
 : PACKAGE_ARCH=${PACKAGE_ARCH:=$(uname -m)}
 : UNPACK_ROOT=${UNPACK_ROOT:=${BUILD_ROOT}/unpack}
 
 function main() {
 
+    # make it simple to branch based on the working OS environment
+    set_os_id # now ${ID} in [fedora|debian|ubuntu]
+    echo "- OS_ID=${ID}"
+
     #dnf install -yes --installroot ${MODEL_ROOT} -- setopt install_weak_deps=false
-    [ -d ${MODEL_ROOT}/usr/bin ] || mkdir -p ${MODEL_ROOT}/usr/bin
-    [ -d ${MODEL_ROOT}/usr/lib ] || mkdir -p ${MODEL_ROOT}/usr/lib
-    [ -d ${MODEL_ROOT}/usr/lib64 ] || mkdir -p ${MODEL_ROOT}/usr/lib64
-    
-    [ -L ${MODEL_ROOT}/bin ] || ln -s usr/bin ${MODEL_ROOT}/bin
-    [ -L ${MODEL_ROOT}/lib ] || ln -s usr/lib ${MODEL_ROOT}/lib64
-    [ -L ${MODEL_ROOT}/lib64 ] || ln -s usr/lib64 ${MODEL_ROOT}/lib64
-    
+
+    echo "- Preparing Model Tree ${MODEL_ROOT}"
+    prepare_model_tree ${MODEL_ROOT}
+
+    # Lay in some diagnostic tools: bash, ldd, ls...
+    echo "- Overlaying Tools into model tree ${MODEL_ROOT}"
+    overlay_tools ${MODEL_ROOT}
+
+    # clean up old runs
+    echo "- Clean up package and unpacking trees: ${PACKAGE_ROOT} ${UNPACK_ROOT}"
     rm -rf ${PACKAGE_ROOT}/*
     rm -rf ${UNPACK_ROOT}/*
 
-    # Add debugging tools: bash and ldd
-    cp /usr/bin/bash ${MODEL_ROOT}/usr/bin/bash
-    [ -L ${MODEL_ROOT}/usr/bin/sh ] || ln -s bash ${MODEL_ROOT}/usr/bin/sh
-    cp /usr/bin/ls ${MODEL_ROOT}/usr/bin/ls
-    cp /usr/bin/ldd ${MODEL_ROOT}/usr/bin/ldd
-
+    echo "- Locating binaries in ${MODEL_ROOT}"
     local binaries=$(find_dynamic_binaries ${MODEL_ROOT})
 
+    echo "- Identifying shared objects required by binaries"
     # Identify the shared libraries that must be resolved for the dynamic binaries
     local libraries=$(find_dynamic_libraries "${LIBRARY_PATH}" ${binaries})
-    #echo ${libraries}
 
-    mkdir -p ${PACKAGE_ROOT}
-    mkdir -p ${UNPACK_ROOT}
-    [ -L ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
-    [ -L ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
- 
-    # Accumulate the list of packages that provide the required libraries
-    declare -a packages
-    local library_file
-    for library_file in $libraries ; do
-	packages+=($(find_file_package $library_file))
-    done
-    # Remove any duplicates
-    packages=($(echo ${packages[@]} | tr ' ' '\n' | sort -u))
+    echo "- Resolving packages that provide the required shared objects"
+    echo "Libraries: ${libraries}"
+#    local packages=$(resolve_packages $libraries)
 
-    local package_name
-    for package_name in ${packages[@]} ; do
-	download_package ${PACKAGE_ROOT} ${package_name}
-    done
+    # echo "- Downloading package files to ${PACKAGE_ROOT}"
+    # mkdir -p ${PACKAGE_ROOT}
+    # local package_name
+    # for package_name in ${packages[@]} ; do
+    # 	download_package ${PACKAGE_ROOT} ${package_name}
+    # done
 
-    local rpm_file
-    for rpm_file in $(ls ${PACKAGE_ROOT}/*.rpm) ; do
-	unpack_package ${rpm_file} ${UNPACK_ROOT}
-    done
+    # Prepare Unpacking tree
+    # echo "- Preparing a location to unpack packages: ${UNPACK_ROOT}"
+    # mkdir -p ${UNPACK_ROOT}
+    # [ -L ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
+    # [ -L ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
+
+    # local pkg_file
+    # for pkg_file in $(ls ${PACKAGE_ROOT}/*.rpm) ; do
+    # 	unpack_package ${rpm_file} ${UNPACK_ROOT}
+    # done
     
-    # Copy the required library files to the model
-    local library_file
-    for library_file in $libraries ; do
-	#	echo $library_file
-	local library_dir=$(dirname ${library_file})
-	[ -d ${MODEL_ROOT}${library_dir} -o -L ${MODEL_ROOT}${library_dir} ] || mkdir -p ${MODEL_ROOT}${library_dir}
-	cp ${UNPACK_ROOT}${library_file} ${MODEL_ROOT}${library_dir}
-    done
+    # # Copy the required library files to the model
+    # local library_file
+    # for library_file in $libraries ; do
+    # 	#	echo $library_file
+    # 	local library_dir=$(dirname ${library_file})
+    # 	[ -d ${MODEL_ROOT}${library_dir} -o -L ${MODEL_ROOT}${library_dir} ] ||
+    # 	    mkdir -p ${MODEL_ROOT}${library_dir}
+    # 	cp ${UNPACK_ROOT}${library_file} ${MODEL_ROOT}${library_dir
+    # done
 
-    # Flatten lib64 libraries to make dynamic linking simpler in the container
-    cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
+    # # Flatten lib64 libraries to make dynamic linking simpler in the container
+    # # Copy the linker/loader shared library
+    # cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
 }
+
+# --------------------------------------------------------------------------------
+# Functions
+# --------------------------------------------------------------------------------
 
 # make it easier to use pkg specific variant functions
 function set_os_id() {
-    eval "export (grep -e '^ID=' /etc/os-release)"
+    eval "export $(grep -e '^ID=' /etc/os-release)"
 }
 
+function prepare_model_tree() {
+    local model_root=$1
+
+    [ -d ${model_root}/usr/bin ] || mkdir -p ${model_root}/usr/bin
+    [ -d ${model_root}/usr/lib ] || mkdir -p ${model_root}/usr/lib
+    [ -d ${model_root}/usr/lib64 ] || mkdir -p ${model_root}/usr/lib64
+    
+    [ -L ${model_root}/bin ] || ln -s usr/bin ${model_root}/bin
+    [ -L ${model_root}/lib ] || ln -s usr/lib ${model_root}/lib
+    [ -L ${model_root}/lib64 ] || ln -s usr/lib ${model_root}/lib64
+}
+
+function overlay_tools() {
+    local model_root=$1
+    
+    # Add debugging tools: bash and ldd
+    cp /usr/bin/bash ${model_root}/usr/bin/bash
+    [ -L ${model_root}/usr/bin/sh ] || ln -s bash ${model_root}/usr/bin/sh
+    cp /usr/bin/ls ${model_root}/usr/bin/ls
+    cp /usr/bin/ldd ${model_root}/usr/bin/ldd
+
+
+}
+
+# Generate a list of dynamically linked binaries under a file root
 function find_dynamic_binaries() {
     local model_root=$1
 
@@ -87,6 +117,8 @@ function find_dynamic_binaries() {
 	cut -d: -f1
 }
 
+# Generate a list of dynamic libraries required by a matching list of
+# dynamically linked binaries
 function find_dynamic_libraries() {
 #
 # find shared libraries linked to the specified binary
@@ -108,12 +140,28 @@ function find_dynamic_libraries() {
 
 }
 
-function find_file_package() {
-    local package=$1
+function resolve_packages() {
+    local libraries="$*"
+    
+    # Accumulate the list of packages that provide the required libraries
+    declare -a pkgs
+    local library_file
+    for library_file in $libraries ; do
+    	pkgs+=($(find_file_package $library_file))
+    done
+    # Remove any duplicates
+    echo ${pkgs[@]} | tr ' ' '\n' | sort -u
 
-    rpm -qf --qf "%{NAME}\n" $package
 }
 
+# Determine what package provides a given file
+function find_file_package() {
+    local library=$1
+
+    rpm -qf --qf "%{NAME}\n" $library
+}
+
+# Download a package to a given location
 function download_package() {
     local package_dir=$1
     local package_name=$2
