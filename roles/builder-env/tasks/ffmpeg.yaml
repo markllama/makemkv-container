@@ -17,6 +17,7 @@
         --prefix={{ ansible_env.PWD }}/build/usr \
         --enable-static \
         --disable-shared \
+        --enable-pic \
         --enable-libfdk-aac
     chdir: "{{ ansible_env.PWD }}/build/ffmpeg"
     creates: "{{ ansible_env.PWD }}/build/ffmpeg/config.h"
