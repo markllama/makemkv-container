@@ -3,15 +3,16 @@
 - name: "Prepare Build Environment on {{ ansible_os_family }}"
   include_tasks: "devtools-{{ ansible_os_family }}.yaml"
 
+- name: "Create a place for building stuff"
+  file:
+    path: "{{ ansible_env.PWD }}/build"
+    state: directory
+    recurse: true
+
 - name: "Build ffmpeg"
   import_tasks: "ffmpeg.yaml"
   tags: ffmpeg
 
-# - name: "Create a place for building stuff"
-#   file:
-#     path: "{{ ansible_env.PWD }}/build"
-#     state: directory
-#     recurse: true
 
 # - name: Unpack MakeMKV Tarballs
 #   unarchive:
