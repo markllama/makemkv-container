@@ -236,9 +236,6 @@ value - attribute value
 * Console usage: https://www.makemkv.com/developers/usage.txt
 * MakeMKV for Linux forum: https://www.makemkv.com/forum/viewforum.php?f=3
 * Main web site: https://www.makemkv.com/
-```
-
-
 
 ## References
 
