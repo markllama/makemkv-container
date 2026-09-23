@@ -150,13 +150,13 @@ Open disc with device name.
  
 #### EXAMPLES
 
-* Copy all titles from first disc and save as MKV files into current directory:_
+* Copy all titles from first disc and save as MKV files into current directory:
     `makemkvcon mkv disc:0 all .`
 
-* List all available drives:__
+* List all available drives:
     `makemkvcon -r --cache=1 info disc:9999`
 
-* Backup first disc decrypting all video files in automation mode with progress output:_
+* Backup first disc decrypting all video files in automation mode with progress output:
     `makemkvcon backup --decrypt --cache=16 --noscan -r --progress=-same disc:0 .`
 
  
