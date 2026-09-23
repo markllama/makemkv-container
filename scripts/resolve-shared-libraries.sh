@@ -37,39 +37,33 @@ function main() {
 
     echo "- Resolving packages that provide the required shared objects"
     echo "Libraries: ${libraries}"
-#    local packages=$(resolve_packages $libraries)
-
-    # echo "- Downloading package files to ${PACKAGE_ROOT}"
-    # mkdir -p ${PACKAGE_ROOT}
-    # local package_name
-    # for package_name in ${packages[@]} ; do
-    # 	download_package ${PACKAGE_ROOT} ${package_name}
-    # done
+    local packages=$(resolve_packages $libraries)
+    
+    echo "- Downloading package files to ${PACKAGE_ROOT}"
+    echo "Packages: ${packages}"
+    mkdir -p ${PACKAGE_ROOT}
+    local package_name
+    for package_name in ${packages} ; do
+     	download_package ${PACKAGE_ROOT} ${package_name}
+    done
 
     # Prepare Unpacking tree
-    # echo "- Preparing a location to unpack packages: ${UNPACK_ROOT}"
-    # mkdir -p ${UNPACK_ROOT}
-    # [ -L ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
-    # [ -L ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
+    echo "- Preparing a location to unpack packages: ${UNPACK_ROOT}"
+    mkdir -p ${UNPACK_ROOT}
+    [ -d ${UNPACK_ROOT}/lib -o -L ${UNPACK_ROOT}/lib ] || ln -s usr/lib ${UNPACK_ROOT}/lib 
+    [ -d ${UNPACK_ROOT}/lib64 -o -L ${UNPACK_ROOT}/lib64 ] || ln -s usr/lib64 ${UNPACK_ROOT}/lib64
 
-    # local pkg_file
-    # for pkg_file in $(ls ${PACKAGE_ROOT}/*.rpm) ; do
-    # 	unpack_package ${rpm_file} ${UNPACK_ROOT}
-    # done
-    
-    # # Copy the required library files to the model
-    # local library_file
-    # for library_file in $libraries ; do
-    # 	#	echo $library_file
-    # 	local library_dir=$(dirname ${library_file})
-    # 	[ -d ${MODEL_ROOT}${library_dir} -o -L ${MODEL_ROOT}${library_dir} ] ||
-    # 	    mkdir -p ${MODEL_ROOT}${library_dir}
-    # 	cp ${UNPACK_ROOT}${library_file} ${MODEL_ROOT}${library_dir
-    # done
+    local pkg_file
+    for pkg_file in $(ls ${PACKAGE_ROOT}/*) ; do
+	unpack_package ${pkg_file} ${UNPACK_ROOT}
+    done
+
+    # Copy each library file from the unpack tree to the model
+    populate_libraries ${UNPACK_ROOT} ${MODEL_ROOT} ${libraries}
 
     # # Flatten lib64 libraries to make dynamic linking simpler in the container
     # # Copy the linker/loader shared library
-    # cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
+    #cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
 }
 
 # --------------------------------------------------------------------------------
@@ -127,7 +121,6 @@ function find_dynamic_libraries() {
     shift
     local binaries=$*
 
-
     [ -z "${DEBUG}" ] || echo "discovering shared libraries on ${binary}" >&2
 
     # Select Only lines with filenames and only one file path
@@ -158,7 +151,21 @@ function resolve_packages() {
 function find_file_package() {
     local library=$1
 
-    rpm -qf --qf "%{NAME}\n" $library
+    case ${ID} in
+	fedora | redhat | centos)
+	    rpm -qf --qf "%{NAME}\n" ${library}
+	    ;;
+
+	debian | ubuntu)
+	    # debian resolves to /lib* but the package installs /usr/lib*
+	     dpkg --search /usr${library} | cut -d: -f1
+	     ;;
+
+	*)
+	    echo "FATAL: OS not supported: ${OS_ID}.  Valid: debian | ubuntu | fedora | redhat" >&2
+	    exit 1
+	    ;;
+    esac
 }
 
 # Download a package to a given location
@@ -166,17 +173,60 @@ function download_package() {
     local package_dir=$1
     local package_name=$2
 
-    dnf download --quiet --arch ${PACKAGE_ARCH} --destdir ${package_dir} ${package_name}
+    case ${ID} in
+	fedora | redhat | centos)
+	    dnf download --arch ${PACKAGE_ARCH} --destdir ${package_dir} ${package_name}
+	    ;;
+
+	debian | ubuntu)
+	    (cd ${package_dir} ; apt-get download ${package_name})
+	    ;;
+
+	*)
+	    echo "FATAL: OS not supported: ${OS_ID}.  Valid: debian | ubuntu | fedora | redhat" >&2
+	    exit 1
+	    ;;
+    esac
 }
 
 #
 # Unpack a package into a working directory
 #
 function unpack_package() {
+    set -x
     local package_filename=$1
     local unpack_root=$2
+
+    case ${ID} in
+	fedora | redhat | centos)
+	    rpm2cpio ${package_filename} | cpio -idmu --quiet --directory ${unpack_root}
+	    ;;
+	debian | ubuntu)
+	    dpkg-deb --extract ${package_filename} ${unpack_root}
+	    ;;
+	*)
+	    echo "FATAL: OS not supported: ${OS_ID}.  Valid: debian | ubuntu | fedora | redhat" >&2
+	    exit 1
+	    ;;
+    esac
+    set +x
+}
+
+function populate_libraries() {
+    local unpack_root=$1
+    local model_root=$2
+    shift ; shift
+    local libraries=$*
     
-    rpm2cpio ${package_filename} | cpio -idmu --quiet --directory ${unpack_root}
+    # Copy the required library files to the model
+    local library_file
+    for library_file in $libraries ; do
+	local library_dir=$(dirname ${library_file})
+	[ -d ${model_root}${library_dir} -o -L ${model_root}${library_dir} ] ||
+	    mkdir -p ${model_root}${library_dir}
+#	cp ${unpack_root}${library_file} ${model_root}${library_dir}
+	cp ${unpack_root}${library_file} ${model_root}/usr/lib
+    done
 }
 
 #
