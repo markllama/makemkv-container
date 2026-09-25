@@ -4,6 +4,7 @@ set -e
 : BUILD_ROOT=${BUILD_ROOT:=${PWD}/build}
 : MODEL_ROOT=${MODEL_ROOT:=${BUILD_ROOT}/model}
 : LIBRARY_PATH=${LIBRARY_PATH:=${MODEL_ROOT}/usr/lib:${MODEL_ROOT}/usr/lib64}
+: RESOLVED_ROOT=${RESOLVED_ROOT:=${BUILD_ROOT}/resolved}
 : PACKAGE_ROOT=${PACKAGE_ROOT:=${BUILD_ROOT}/packages}
 : PACKAGE_ARCH=${PACKAGE_ARCH:=$(uname -m)}
 : UNPACK_ROOT=${UNPACK_ROOT:=${BUILD_ROOT}/unpack}
@@ -59,11 +60,16 @@ function main() {
     done
 
     # Copy each library file from the unpack tree to the model
-    populate_libraries ${UNPACK_ROOT} ${MODEL_ROOT} ${libraries}
+    mkdir -p ${RESOLVED_ROOT}/usr/lib
+    mkdir -p ${RESOLVED_ROOT}/usr/lib64
+    ln -s usr/lib ${RESOLVED_ROOT}/lib
+    ln -s usr/lib ${RESOLVED_ROOT}/lib64
+    
+    populate_libraries ${UNPACK_ROOT} ${RESOLVED_ROOT} ${libraries}
 
     # # Flatten lib64 libraries to make dynamic linking simpler in the container
     # # Copy the linker/loader shared library
-    #cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${MODEL_ROOT}/lib64    
+    cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${RESOLVED_ROOT}/lib64    
 }
 
 # --------------------------------------------------------------------------------
@@ -193,7 +199,6 @@ function download_package() {
 # Unpack a package into a working directory
 #
 function unpack_package() {
-    set -x
     local package_filename=$1
     local unpack_root=$2
 
@@ -209,12 +214,12 @@ function unpack_package() {
 	    exit 1
 	    ;;
     esac
-    set +x
 }
 
 function populate_libraries() {
+    set -x
     local unpack_root=$1
-    local model_root=$2
+    local resolved_root=$2
     shift ; shift
     local libraries=$*
     
@@ -222,11 +227,12 @@ function populate_libraries() {
     local library_file
     for library_file in $libraries ; do
 	local library_dir=$(dirname ${library_file})
-	[ -d ${model_root}${library_dir} -o -L ${model_root}${library_dir} ] ||
-	    mkdir -p ${model_root}${library_dir}
-#	cp ${unpack_root}${library_file} ${model_root}${library_dir}
-	cp ${unpack_root}${library_file} ${model_root}/usr/lib
+	[ -d ${resolved_root}${library_dir} -o -L ${resolved_root}${library_dir} ] ||
+	    mkdir -p ${resolved_root}${library_dir}
+#	cp ${unpack_root}${library_file} ${resolved_root}${library_dir}
+	cp ${unpack_root}${library_file} ${resolved_root}${library_dir}
     done
+    set +x
 }
 
 #

@@ -57,49 +57,40 @@
 
       tags: build
 
-    - name: Create Model
-      block:
-        - name: Create model directory for container tree
-          file:
-            path: "{{ ansible_env.PWD }}/build/model"
-            state: directory
-            recurse: true
+    # - name: Create Model
+    #   block:
+    #     - name: Create model directory for container tree
+    #       file:
+    #         path: "{{ ansible_env.PWD }}/build/model"
+    #         state: directory
+    #         recurse: true
 
-        - name: Install built files into model
-          make:
-            target: install
-            params:
-              DESTDIR: "{{ ansible_env.PWD }}/build/model"
-              PREFIX: "/usr"
-            chdir: "{{ ansible_env.PWD }}/build/makemkv-{{ item }}-{{ makemkv.version }}"
-          loop:
-            - oss
-            - bin
+    #     - name: Install built files into model
+    #       make:
+    #         target: install
+    #         params:
+    #           DESTDIR: "{{ ansible_env.PWD }}/build/model"
+    #           PREFIX: "/usr"
+    #         chdir: "{{ ansible_env.PWD }}/build/makemkv-{{ item }}-{{ makemkv.version }}"
+    #       loop:
+    #         - oss
+    #         - bin
 
-        - name: Scan current model contents
-          shell:
-            cmd: find * -type f
-            chdir: "{{ ansible_env.PWD }}/build/model"
-          register: model1
+    #     - name: Scan current model contents
+    #       shell:
+    #         cmd: find * -type f
+    #         chdir: "{{ ansible_env.PWD }}/build/model"
+    #       register: model1
 
-        - name: Report current model contents
-          debug:
-            msg: "{{ model1.stdout_lines }}"
+    #     - name: Report current model contents
+    #       debug:
+    #         msg: "{{ model1.stdout_lines }}"
 
-        # - name: Collect shared libraries
-        #   shell:
-        #     cmd: |
-        #       scripts/collect-shared-libraries.sh
+    #   tags: model
 
-        # - name: Scan current model contents
-        #   shell:
-        #     cmd: find * -type f
-        #     chdir: "{{ ansible_env.PWD }}/build/model"
-        #   register: model2
-
-        # - name: Report current model contents
-        #   debug:
-        #     msg: "{{ model2.stdout_lines }}"
-
-      tags: model
-
+      # /lib -> /usr/lib
+      # /lib64 -> /usr/lib
+      # /home
+      # /home/.MakeMKV
+      # /home/.MakeMKV/settings.conf -> /config
+      # /tmp

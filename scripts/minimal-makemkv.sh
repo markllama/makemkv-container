@@ -16,7 +16,7 @@ OPT_SPEC='a:b:c:s:r:'
 
 DEFAULT_SERVICE="makemkvcon"
 DEFAULT_SOURCE_ROOT="build/model"
-DEFAULT_AUTHOR="Mark Lamourine <markllama@gmail.com>"
+DEFAULT_AUTHOR="Guinpin Software Inc. <markllama@gmail.com>"
 DEFAULT_BUILDER="Mark Lamourine <markllama@gmail.com>"
 DEFAULT_BASE=scratch
 
@@ -30,37 +30,49 @@ DEFAULT_BASE=scratch
 
 # /usr/bin/makemkv
 
+
 function main() {
+    parse_args $*
+
+    # If the CONTAINER_ID is not defined, create a new build from scratch
+    local container
+    if [ -z "${CONTAINER_ID}" ] ; then
+	container=$(buildah from --name $SERVICE ${BASE})
+    else
+	container=${CONTAINER_ID}
+    fi
+
+    # 
+    if [ -z "${BUILDAH_ISOLATION}" ] then
+       buildah unshare bash $0 -c ${container} -s ${SOURCE_ROOT}
+    fi
+    
+}
+
+function main_disabled() {
 
     parse_args $*
 
-    if [ -z "${BUILDAH_ISOLATION}" -o -z "${CONTAINER_ID}" ] ; then
+    if [ -n "${BUILDAH_ISOLATION}" -o -z "${CONTAINER_ID}" ] ; then
 	# Create a container
 	local container=$(buildah from --name $SERVICE ${BASE})
 
 	if [ -z "${BUILDAH_ISOLATION}" ] ; then
-	    # Run the file copy in an unshare environement
+	    # Call this script again inside an unshare environment
 	    buildah unshare bash $0 -c ${container} -s ${SOURCE_ROOT}
-	else
-	    # Already in an unshare environment
-	    copy_model_tree ${SOURCE_ROOT} ${container}
 	fi
 
 	buildah config --workingdir / $container
 	
 	# add a volume to include the configuration file
 	# Leave the files in the default locations 
-	buildah config --env 'MAKEMKV_KEY=' $container
-	buildah config --env "HOME=/" $container
 	buildah config --env "LD_LIBRARY_PATH=/usr/lib64:/usr/lib" $container
+	buildah config --env "HOME=/home" $container
+	buildah config --env 'MAKEMKV_KEY=' $container
 
-	buildah config --volume /config $container
-
+#	buildah config --volume /config $container
 	buildah config --volume /input $container
 	buildah config --volume /output $container
-
-	# # open ports for listening
-#	buildah config --port 68/udp --port 69/udp ${container}
 
 	# # Define the startup command
 	#buildah config --entrypoint "/usr/bin/bash" $container
@@ -75,15 +87,16 @@ function main() {
 	buildah commit --squash $container $SERVICE
 
 	# name for quay registry
-	buildah tag localhost/makemkvcon quay.io/markllama/makemkvcon:latest
+#	buildah tag localhost/makemkvcon quay.io/markllama/makemkvcon:latest
 	# tag for github registry
-	buildah tag localhost/makemkvcon ghcr.io/markllama/makemkvcon:latest
+#	buildah tag localhost/makemkvcon ghcr.io/markllama/makemkvcon:latest
 
 	podman rm ${SERVICE}
 
     else
 	# Only the copy needs to happen in an unshare environment
 	copy_model_tree ${SOURCE_ROOT} ${CONTAINER_ID}
+	copy_library_tree ${SOURCE_ROOT} ${CONTAINER_ID}
     fi
 }
 
@@ -104,19 +117,19 @@ function copy_model_tree() {
     cp -r ${source_root}/* ${mountpoint}
     
     # Create volume mount points
-    mkdir -p ${mountpoint}/tmp
+    #mkdir -p ${mountpoint}/tmp
 
-    mkdir -p ${mountpoint}/input
-    mkdir -p ${mountpoint}/output
+    #mkdir -p ${mountpoint}/input
+    #mkdir -p ${mountpoint}/output
 
     # If you pass in the settings file in /config
-    mkdir -p ${mountpoint}/.MakeMKV
-    ln -s /config ${mountpoint}/.MakeMKV/settings.conf
+    #mkdir -p ${mountpoint}/.MakeMKV
+    #ln -s /config ${mountpoint}/.MakeMKV/settings.conf
 
     [ -z ${DEBUG} ] || (echo FULL ; cd ${mountpoint} ; pwd ;  find . -type f)
 
     # Release the container file space
-    buildah unmount ${container_id}
+    #buildah unmount ${container_id}
     set +x
 }
 
