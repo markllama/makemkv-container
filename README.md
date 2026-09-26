@@ -21,7 +21,36 @@ INPUTS:
 podman run quay.io/markllama/makemkv -v <key file>:/settings.conf -v <input>
 ```
 
+## Examples
+
+
 ## Build Details
+
+`makemkvcon` is the CLI component of MakeMKV.  It is the engine under the GUI of MakeMKV.
+MakeMKV is a semi-open-source tool for converting video and audio to
+MKV format for local streaming. It depends on `ffmpeg` for reading the
+various media formats. The 'semi-open-source' part is that it includes
+a proprietary binary and paid license to run the master binary.
+
+Building and deploying `makemkvcon` requires building two open-source
+binaries and packaging them with the `ffmpeg` library and a set of
+shared objects required by the closed-source `makemkvcon` binary. 
+
+### Build Process
+
+* Install tools for building the MakeMKV tools
+* Install the tools for building the `ffmpeg` libraries
+* Configure the `ffmpeg` build for static linking only and build
+* Configure and build the MakeMKV tools and libraries
+
+At this point you have the binaries and libraries to run `makemkvcon`. 
+
+The container needs those binaries and libraries and a couple of tools
+for debugging (bash/sh, ls and ldd... for now)
+
+* `ansible-playbook builder-env-pb.yaml`
+* `ansible-playbook build-ffmpeg-pb.yaml`
+* `ansible-playbook makemkvcon-pb.yaml`
 
 ## makemkvcon Usage Information
 

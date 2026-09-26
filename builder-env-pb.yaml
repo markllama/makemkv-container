@@ -6,11 +6,8 @@
   hosts: localhost
   connection: local
 
-  vars:
-    makemkv:
-      version: 2.0.0
-    ffmpeg:
-      version: 8.1
+  vars_files:
+    - makemkv.yaml
 
   roles:
     - builder-env
