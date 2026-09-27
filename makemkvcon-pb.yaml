@@ -88,9 +88,23 @@
 
       tags: model
 
-      # /lib -> /usr/lib
-      # /lib64 -> /usr/lib
-      # /home
-      # /home/.MakeMKV
-      # /home/.MakeMKV/settings.conf -> /config
-      # /tmp
+    - name: Fill model directories and links
+      block:
+        - name: Create model directories
+          file:
+            path: "{{ ansible_env.PWD }}/build/model/{{ item }}"
+            state: directory
+            recurse: true
+          loop:
+            - .MakeMKV
+            - tmp
+
+        - name: Create model symlinks
+          file:
+            path:  "{{ ansible_env.PWD }}/build/model/{{ item.path }}"
+            src: "{{ item.src }}"
+            state: link
+          loop:
+            - { "path": "bin", "src": "/usr/bin" }
+            - { "path": "lib", "src": "/usr/lib" }
+            - { "path": "lib64", "src": "/usr/lib" }

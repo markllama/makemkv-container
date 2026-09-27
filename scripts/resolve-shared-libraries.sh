@@ -61,13 +61,9 @@ function main() {
 
     # Copy each library file from the unpack tree to the model
     mkdir -p ${RESOLVED_ROOT}/usr/lib
-    #mkdir -p ${RESOLVED_ROOT}/usr/lib64
-    #ln -s usr/lib ${RESOLVED_ROOT}/lib
-    #ln -s usr/lib ${RESOLVED_ROOT}/lib64
     
     populate_libraries ${UNPACK_ROOT} ${RESOLVED_ROOT} ${libraries}
 
-    # # Flatten lib64 libraries to make dynamic linking simpler in the container
     # # Copy the linker/loader shared library
     cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${RESOLVED_ROOT}/usr/lib
 }
@@ -88,9 +84,6 @@ function prepare_model_tree() {
     [ -d ${model_root}/usr/lib ] || mkdir -p ${model_root}/usr/lib
     [ -d ${model_root}/usr/lib64 ] || mkdir -p ${model_root}/usr/lib64
     
-#    [ -L ${model_root}/bin ] || ln -s usr/bin ${model_root}/bin
-#    [ -L ${model_root}/lib ] || ln -s usr/lib ${model_root}/lib
-#    [ -L ${model_root}/lib64 ] || ln -s usr/lib ${model_root}/lib64
 }
 
 function overlay_tools() {
