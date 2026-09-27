@@ -28,7 +28,7 @@
       shell:
         cmd: |
           ./configure \
-          --prefix={{ ansible_env.PWD }}/build/usr \
+          --prefix={{ ansible_env.PWD }}/build/ffmpeg/usr \
           --enable-static \
           --disable-shared \
           --enable-pic \
@@ -42,8 +42,8 @@
         chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
         creates: "{{ ansible_env.PWD }}/build/ffmpeg/src/ffmpeg"
 
-#    - name: Install ffmpeg
-#      shell:
-#        cmd: make install
-#        chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
-#        creates: "{{ ansible_env.PWD }}/build/ffmpeg/src/usr/bin/ffmpeg"
+    - name: Install ffmpeg
+      shell:
+        cmd: make install
+        chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
+        creates: "{{ ansible_env.PWD }}/build/ffmpeg/usr/bin/ffmpeg"

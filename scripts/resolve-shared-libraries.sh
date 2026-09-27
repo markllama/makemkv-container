@@ -37,11 +37,11 @@ function main() {
     local libraries=$(find_dynamic_libraries "${LIBRARY_PATH}" ${binaries})
 
     echo "- Resolving packages that provide the required shared objects"
-    echo "Libraries: ${libraries}"
+    #echo "Libraries: ${libraries}"
     local packages=$(resolve_packages $libraries)
     
     echo "- Downloading package files to ${PACKAGE_ROOT}"
-    echo "Packages: ${packages}"
+    #echo "Packages: ${packages}"
     mkdir -p ${PACKAGE_ROOT}
     local package_name
     for package_name in ${packages} ; do
@@ -61,15 +61,15 @@ function main() {
 
     # Copy each library file from the unpack tree to the model
     mkdir -p ${RESOLVED_ROOT}/usr/lib
-    mkdir -p ${RESOLVED_ROOT}/usr/lib64
-    ln -s usr/lib ${RESOLVED_ROOT}/lib
-    ln -s usr/lib ${RESOLVED_ROOT}/lib64
+    #mkdir -p ${RESOLVED_ROOT}/usr/lib64
+    #ln -s usr/lib ${RESOLVED_ROOT}/lib
+    #ln -s usr/lib ${RESOLVED_ROOT}/lib64
     
     populate_libraries ${UNPACK_ROOT} ${RESOLVED_ROOT} ${libraries}
 
     # # Flatten lib64 libraries to make dynamic linking simpler in the container
     # # Copy the linker/loader shared library
-    cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${RESOLVED_ROOT}/lib64    
+    cp ${UNPACK_ROOT}/lib64/ld-linux-x86-64.so.* ${RESOLVED_ROOT}/usr/lib
 }
 
 # --------------------------------------------------------------------------------
@@ -88,9 +88,9 @@ function prepare_model_tree() {
     [ -d ${model_root}/usr/lib ] || mkdir -p ${model_root}/usr/lib
     [ -d ${model_root}/usr/lib64 ] || mkdir -p ${model_root}/usr/lib64
     
-    [ -L ${model_root}/bin ] || ln -s usr/bin ${model_root}/bin
-    [ -L ${model_root}/lib ] || ln -s usr/lib ${model_root}/lib
-    [ -L ${model_root}/lib64 ] || ln -s usr/lib ${model_root}/lib64
+#    [ -L ${model_root}/bin ] || ln -s usr/bin ${model_root}/bin
+#    [ -L ${model_root}/lib ] || ln -s usr/lib ${model_root}/lib
+#    [ -L ${model_root}/lib64 ] || ln -s usr/lib ${model_root}/lib64
 }
 
 function overlay_tools() {
@@ -181,7 +181,7 @@ function download_package() {
 
     case ${ID} in
 	fedora | redhat | centos)
-	    dnf download --arch ${PACKAGE_ARCH} --destdir ${package_dir} ${package_name}
+	    dnf download --quiet --arch ${PACKAGE_ARCH} --destdir ${package_dir} ${package_name}
 	    ;;
 
 	debian | ubuntu)
@@ -217,22 +217,19 @@ function unpack_package() {
 }
 
 function populate_libraries() {
-    set -x
     local unpack_root=$1
     local resolved_root=$2
     shift ; shift
     local libraries=$*
+
+    local libdir=${resolved_root}/usr/lib
+    mkdir -p ${libdir}
     
     # Copy the required library files to the model
     local library_file
     for library_file in $libraries ; do
-	local library_dir=$(dirname ${library_file})
-	[ -d ${resolved_root}${library_dir} -o -L ${resolved_root}${library_dir} ] ||
-	    mkdir -p ${resolved_root}${library_dir}
-#	cp ${unpack_root}${library_file} ${resolved_root}${library_dir}
-	cp ${unpack_root}${library_file} ${resolved_root}${library_dir}
+	cp ${unpack_root}${library_file} ${libdir}
     done
-    set +x
 }
 
 #
