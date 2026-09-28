@@ -80,22 +80,27 @@ function set_os_id() {
 function prepare_model_tree() {
     local model_root=$1
 
+    [ -d ${model_root}/etc ] || mkdir -p ${model_root}/etc
+    [ -d ${model_root}/usr/share/misc/magic ] || mkdir -p ${model_root}/usr/share/misc/magic
+      
     [ -d ${model_root}/usr/bin ] || mkdir -p ${model_root}/usr/bin
     [ -d ${model_root}/usr/lib ] || mkdir -p ${model_root}/usr/lib
     [ -d ${model_root}/usr/lib64 ] || mkdir -p ${model_root}/usr/lib64
-    
 }
 
 function overlay_tools() {
     local model_root=$1
-    
-    # Add debugging tools: bash and ldd
+
+    # bash ls ldd file
+    # Add debugging tools: bash, ls and ldd
     cp /usr/bin/bash ${model_root}/usr/bin/bash
     [ -L ${model_root}/usr/bin/sh ] || ln -s bash ${model_root}/usr/bin/sh
     cp /usr/bin/ls ${model_root}/usr/bin/ls
     cp /usr/bin/ldd ${model_root}/usr/bin/ldd
 
-
+    cp /usr/bin/file ${model_root}/usr/bin/file
+    cp /etc/magic ${model_root}/etc/magic
+    cp /usr/share/misc/magic.mgc ${model_root}/usr/share/misc/magic.mgc
 }
 
 # Generate a list of dynamically linked binaries under a file root
