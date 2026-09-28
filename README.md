@@ -42,6 +42,8 @@ shared objects required by the closed-source `makemkvcon` binary.
 * Install the tools for building the `ffmpeg` libraries
 * Configure the `ffmpeg` build for static linking only and build
 * Configure and build the MakeMKV tools and libraries
+* Resolve the needed shared libraries for MakeMKV
+* 
 
 At this point you have the binaries and libraries to run `makemkvcon`. 
 

@@ -13,3 +13,9 @@ VOLUME /output
 
 COPY build/model/ /
 COPY build/resolved/ /
+COPY scripts/entrypoint.sh /usr/bin/entrypoint
+
+CMD info /input
+
+#ENTRYPOINT ["/usr/bin/makemkvcon"]
+ENTRYPOINT ["/usr/bin/entrypoint"]
