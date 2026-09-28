@@ -1,0 +1,21 @@
+---
+# Install tools for RedHat family systems
+- name: Install Development Tools
+  dnf:
+    name: "@Development Tools"
+    state: present
+  become: true
+          
+- name: Install required packages from fedora repos
+  dnf:
+    name:
+      - nasm
+      - openssl-devel
+      - expat-devel
+      - mesa-libGL-devel
+      - qt5-qtbase-devel
+      - zlib-devel
+      - distribution-gpg-keys
+      - make
+    state: present
+  become: true  
