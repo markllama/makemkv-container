@@ -1,0 +1,5 @@
+---
+# Install build environment for MakeMKV
+# Just pick based on the OS family
+- name: "Install build tools on {{ ansible_os_family }}"
+  include_tasks: "build-tools-{{ ansible_os_family }}.yaml"
