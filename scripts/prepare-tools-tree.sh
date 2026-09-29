@@ -13,7 +13,6 @@ BINDIR=/usr/bin
 TOOLS=(bash ls ldd)
 
 SCRIPT_DIR=$(dirname $0)
-
 source ${SCRIPT_DIR}/shared_object_lib.sh
 
 function main(){

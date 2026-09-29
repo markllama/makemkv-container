@@ -65,6 +65,13 @@
             state: directory
             recurse: true
 
+        - name: Add lib64 symlink for shared library resolution
+          file:
+            path: "{{ ansible_env.PWD }}/build/model/lib64"
+            src: 'usr/lib'
+            state: link
+            force: yes
+
         - name: Install built files into model
           make:
             target: install
