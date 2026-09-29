@@ -20,10 +20,6 @@ function main() {
     echo "- Preparing Model Tree ${MODEL_ROOT}"
     prepare_model_tree ${MODEL_ROOT}
 
-    # Lay in some diagnostic tools: bash, ldd, ls...
-    echo "- Overlaying Tools into model tree ${MODEL_ROOT}"
-    overlay_tools ${MODEL_ROOT}
-
     # clean up old runs
     echo "- Clean up package and unpacking trees: ${PACKAGE_ROOT} ${UNPACK_ROOT}"
     rm -rf ${PACKAGE_ROOT}/*
