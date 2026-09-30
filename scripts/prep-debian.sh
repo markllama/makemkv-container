@@ -4,4 +4,5 @@ sudo apt -y install locales
 sudo sed -i '/^# en_US.UTF-8 /s/^# //' /etc/locale.gen
 sudo locale-gen
 
-sudo apt -y install ansible
+sudo apt -y install ansible apt-file
+sudo apt-file update

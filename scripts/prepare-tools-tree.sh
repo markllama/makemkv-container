@@ -23,20 +23,21 @@ function main(){
     mkdir -p ${RESOLVED_ROOT}
     mkdir -p ${PACKAGE_ROOT}
     mkdir -p ${UNPACK_ROOT}
-    
+
+    # Get and unpack the requested tool binaries
     local tool
     for tool in ${TOOLS[@]} ; do
 	local package_name=$(find_file_package ${BINDIR}/${tool})
 
-	download_package ${PACKAGE_ROOT} ${package_name} 
-        unpack_package ${PACKAGE_ROOT}/${package_name}*.rpm ${UNPACK_ROOT}
+	download_package ${PACKAGE_ROOT} ${package_name}
+        unpack_package ${PACKAGE_ROOT}/${package_name}* ${UNPACK_ROOT}
         cp ${UNPACK_ROOT}/${BINDIR}/${tool} ${MODEL_ROOT}/${BINDIR}/${tool} 
     done
 
     # resolve libraries 
     # find binaries in ${TOOLS_ROOT}
 
-        echo "- Locating binaries in ${MODEL_ROOT}"
+    echo "- Locating binaries in ${MODEL_ROOT}"
     local binaries=$(find_dynamic_binaries ${MODEL_ROOT})
 
     echo "- Identifying shared objects required by binaries"
@@ -44,7 +45,7 @@ function main(){
     local libraries=$(find_dynamic_libraries "${LIBRARY_PATH}" ${binaries})
 
     echo "- Resolving packages that provide the required shared objects"
-    #echo "Libraries: ${libraries}"
+    echo "Libraries: ${libraries}"
     local packages=$(resolve_packages $libraries)
     
     echo "- Downloading package files to ${PACKAGE_ROOT}"

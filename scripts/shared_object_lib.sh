@@ -60,16 +60,18 @@ function resolve_packages() {
 
 # Determine what package provides a given file
 function find_file_package() {
-    local library=$1
+    local filename=$1
 
     case ${ID} in
 	fedora | redhat | centos)
-	    rpm -qf --qf "%{NAME}\n" ${library}
+	    rpm -qf --qf "%{NAME}\n" ${filename}
 	    ;;
 
 	debian | ubuntu)
 	    # debian resolves to /lib* but the package installs /usr/lib*
-	     dpkg --search /usr${library} | cut -d: -f1
+	    # dpkg --search /usr${filename} | cut -d: -f1
+	    [[ "${filename}" =~ ^/lib/ ]] && filename="/usr${filename}"
+	     dpkg --search ${filename} | cut -d: -f1
 	     ;;
 
 	*)
