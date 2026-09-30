@@ -65,6 +65,11 @@
             state: directory
             recurse: true
 
+        - name: MakeMKV requires /tmp for operation
+          file:
+            path: "{{ ansible_env.PWD }}/build/model/tmp"
+            state: directory
+
         - name: Add lib64 symlink for shared library resolution
           file:
             path: "{{ ansible_env.PWD }}/build/model/lib64"

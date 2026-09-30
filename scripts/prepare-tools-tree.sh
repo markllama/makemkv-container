@@ -10,7 +10,7 @@ BINDIR=/usr/bin
 : PACKAGE_ARCH=${PACKAGE_ARCH:=$(uname -m)}
 : UNPACK_ROOT=${UNPACK_ROOT:=${BUILD_ROOT}/tools/unpack}
 
-TOOLS=(bash ls ldd)
+TOOLS=(bash ls ldd cat touch strace)
 
 SCRIPT_DIR=$(dirname $0)
 source ${SCRIPT_DIR}/shared_object_lib.sh

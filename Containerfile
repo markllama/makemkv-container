@@ -19,9 +19,6 @@ COPY build/tools/resolved /
 COPY build/model/ /
 COPY build/resolved/ /
 
-#COPY scripts/entrypoint.sh /usr/bin/entrypoint
+COPY scripts/entrypoint.sh /usr/bin/entrypoint
 
-CMD info /input
-
-ENTRYPOINT ["/usr/bin/makemkvcon"]
-#ENTRYPOINT ["/usr/bin/entrypoint"]
+ENTRYPOINT ["/usr/bin/entrypoint"]
