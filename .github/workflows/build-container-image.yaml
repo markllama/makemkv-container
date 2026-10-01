@@ -57,3 +57,11 @@ jobs:
       - name: Resolve required shared objects for makemkvcon
         run: |
           scripts/resolve-shared-libraries.sh
+
+      - name: Create the container image
+        uses: redhat-actions/buildah-build@v3
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          containerfiles:
+            ./ContainerFile
+          oci: true
