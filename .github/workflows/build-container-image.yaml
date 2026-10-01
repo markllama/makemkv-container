@@ -54,6 +54,6 @@ jobs:
         run: |
           scripts/prepare-tools-tree.sh
 
-      - name: Pull and unpack required toos
+      - name: Resolve required shared objects for makemkvcon
         run: |
           scripts/resolve-shared-libraries.sh
