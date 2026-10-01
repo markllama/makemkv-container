@@ -1,0 +1,106 @@
+---
+name: build-makemkvcon
+run-name: Build MakeMKV CLI Software Container
+on: [ workflow_dispatch ]
+
+# variables
+env:
+  MAKEMKV_VERSION: 1.18.4
+  FFMPEG_BRANCH: release/8.1
+
+  AUTHOR: Mark Lamourine <mark@llamatek.dev>
+  BUILDER: Mark Lamourine <mark@llamatek.dev>
+  
+  IMAGE_NAME: makemkvcon
+  IMAGE_TAGS: latest #${{ github.sha }}
+
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+#  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone workspace for makemkv-container
+        uses: actions/checkout@v7
+
+      - name: Update package metadata
+        run: |
+          sudo apt -y update
+
+      - name: Install container build/run tools
+        run: |
+          sudo apt -y install \
+            ansible \
+            podman \
+            buildah
+
+      - name: Test Ansible
+        run: ansible localhost -m setup
+
+      - name: Install Build Tools
+        run: |
+          ansible-playbook build-makemkvcon-pb.yaml
+
+      # And build makemkvcon - separate?
+      #
+      # Now create a container from build/model
+      - name: Create Container Image from Model
+        run: |
+          scripts/minimal-makemkv.sh
+
+      # - name: Create Container Image
+      #   uses: redhat-actions/buildah-build@v3
+      #   with:
+      #     base-image: scratch
+      #     image: ${{ env.IMAGE_NAME }}
+      #     content: |
+      #       build/model/
+      #     workdir: /
+      #     envs: |
+      #       MAKEMKV_KEY=
+      #       HOME=/
+      #       LD_LIBRARY_PATH=/usr/lib64:/usr/lib
+      #     tags: |
+      #       latest
+
+      #     extra-args: |
+      #       --volume /config
+      #       --volume /input
+      #       --volume /output
+            
+      #     #author: ${{ env.AUTHOR }}
+      #     #created-by: ${{ env.BUILDER }}
+
+      #     annotations:
+      #       description=MakeMKV ${{ env.MAKEMKV_VERSION }}
+      #       license=Copyright (C) 2007-2025 GuinpinSoft inc
+
+      #     squash: true
+      #     oci: true
+        
+      - name: Confirm container image creation
+        run:
+          buildah images
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Push new image to registry
+        uses: redhat-actions/push-to-registry@v3
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }} 
