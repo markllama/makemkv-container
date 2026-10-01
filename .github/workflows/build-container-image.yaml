@@ -37,3 +37,15 @@ jobs:
       - name: Prepare build environment
         run: |
           ansible-playbook prepare-build-env-pb.yaml
+
+      - name: Prepare ffmpeg build environment
+        run: |
+          ansible-playbook prepare-ffmpeg-build-env-pb.yaml
+          
+      - name: Build ffmpeg
+        run: |
+          ansible-playbook build-ffmpeg-pb.yaml
+
+      - name: Build makemkv OSS binaries
+        run: |
+          ansible-playbook makemkvcon-pb.yaml
