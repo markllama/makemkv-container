@@ -63,5 +63,5 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           containerfiles:
-            ./ContainerFile
+            ./Containerfile
           oci: true
