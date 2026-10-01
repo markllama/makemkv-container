@@ -39,22 +39,22 @@ jobs:
 
       - name: Install Build Tools
         run: |
-          ansible-playbook {{ item }}-pb.yaml
-        loop:
-          - prepare-build-env
-          - prepare-ffmpeg-env
-          - build-ffmpeg
-          - makemkvcon
+          ansible-playbook prepare-build-env-pb.yaml
+#        loop:
+#          - prepare-build-env
+#          - prepare-ffmpeg-env
+#          - build-ffmpeg
+#          - makemkvcon
 
       # And build makemkvcon - separate?
       #
       # Now create a container from build/model
-      - name: Create Container Image from Model
-        run: |
-          scripts/{{ item }}.sh
-        loop:
-          - prepare-tools-tree
-          - resolve-shared-libraries
+#      - name: Create Container Image from Model
+#        run: |
+#          scripts/{{ item }}.sh
+#        loop:
+#          - prepare-tools-tree
+#          - resolve-shared-libraries
 
       # - name: Create Container Image
       #   uses: redhat-actions/buildah-build@v3
