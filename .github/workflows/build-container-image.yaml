@@ -5,7 +5,7 @@ on: [ workflow_dispatch ]
 
 # variables
 env:
-  MAKEMKV_VERSION: 1.18.4
+  MAKEMKV_VERSION: 2.0.0
   FFMPEG_BRANCH: release/8.1
 
   AUTHOR: Mark Lamourine <mark@llamatek.dev>
