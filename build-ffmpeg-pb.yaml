@@ -6,44 +6,8 @@
   hosts: localhost
   connection: local
 
-  vars:
-    ffmpeg:
-      version: 8.1
+  vars_files:
+    - makemkv.yaml
 
-  tasks:
-    - name: Create a space for ffmpeg builds
-      file:
-        path: "{{ ansible_env.PWD }}/build/ffmpeg"
-        state: directory
-        
-    - name: Clone ffmpeg repository
-      git:
-        repo: https://git.ffmpeg.org/ffmpeg.git
-        version: "release/{{ ffmpeg.version }}"
-        clone: true
-        single_branch: true
-        dest: "{{ ansible_env.PWD }}/build/ffmpeg/src"
-
-    - name: Configure ffmpeg
-      shell:
-        cmd: |
-          ./configure \
-          --prefix={{ ansible_env.PWD }}/build/ffmpeg/usr \
-          --enable-static \
-          --disable-shared \
-          --enable-pic \
-          --enable-libfdk-aac
-        chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
-        creates: "{{ ansible_env.PWD }}/build/ffmpeg/src/config.h"
-
-    - name: Build ffmpeg
-      shell:
-        cmd: make
-        chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
-        creates: "{{ ansible_env.PWD }}/build/ffmpeg/src/ffmpeg"
-
-    - name: Install ffmpeg
-      shell:
-        cmd: make install
-        chdir: "{{ ansible_env.PWD }}/build/ffmpeg/src"
-        creates: "{{ ansible_env.PWD }}/build/ffmpeg/usr/bin/ffmpeg"
+  roles:
+    - build-ffmpeg
