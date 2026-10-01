@@ -40,7 +40,7 @@ jobs:
 
       - name: Prepare ffmpeg build environment
         run: |
-          ansible-playbook prepare-ffmpeg-build-env-pb.yaml
+          ansible-playbook prepare-ffmpeg-env-pb.yaml
           
       - name: Build ffmpeg
         run: |
