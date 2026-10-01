@@ -49,3 +49,11 @@ jobs:
       - name: Build makemkv OSS binaries
         run: |
           ansible-playbook makemkvcon-pb.yaml
+
+      - name: Pull and unpack required tools
+        run: |
+          scripts/prepare-tools-tree.sh
+
+      - name: Pull and unpack required toos
+        run: |
+          scripts/resolve-shared-libraries.sh
