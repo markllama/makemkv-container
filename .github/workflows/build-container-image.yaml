@@ -5,7 +5,7 @@ on: [ workflow_dispatch ]
 
 # variables
 env:
-  MAKEMKV_VERSION: 1.18.4
+  MAKEMKV_VERSION: 2.0.0
   FFMPEG_BRANCH: release/8.1
 
   AUTHOR: Mark Lamourine <mark@llamatek.dev>
@@ -32,28 +32,29 @@ jobs:
 
       - name: Update package metadata
         run: |
-          sudo apt -y update
-
-      - name: Install container build/run tools
-        run: |
-          sudo apt -y install \
-            ansible \
-            podman \
-            buildah
+          sudo bash scripts/prep-debian.sh
 
       - name: Test Ansible
         run: ansible localhost -m setup
 
       - name: Install Build Tools
         run: |
-          ansible-playbook build-makemkvcon-pb.yaml
+          ansible-playbook {{ item }}-pb.yaml
+        loop:
+          - prepare-build-env
+          - prepare-ffmpeg-env
+          - build-ffmpeg
+          - makemkvcon
 
       # And build makemkvcon - separate?
       #
       # Now create a container from build/model
       - name: Create Container Image from Model
         run: |
-          scripts/minimal-makemkv.sh
+          scripts/{{ item }}.sh
+        loop:
+          - prepare-tools-tree
+          - resolve-shared-libraries
 
       # - name: Create Container Image
       #   uses: redhat-actions/buildah-build@v3
@@ -85,22 +86,22 @@ jobs:
       #     squash: true
       #     oci: true
         
-      - name: Confirm container image creation
-        run:
-          buildah images
+      # - name: Confirm container image creation
+      #   run:
+      #     buildah images
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v4
+      #   with:
+      #     registry: ${{ env.IMAGE_REGISTRY }}
+      #     username: ${{ env.REGISTRY_USER }}
+      #     password: ${{ env.REGISTRY_PASSWORD }}
 
-      - name: Push new image to registry
-        uses: redhat-actions/push-to-registry@v3
-        with:
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.IMAGE_TAGS }} 
+      # - name: Push new image to registry
+      #   uses: redhat-actions/push-to-registry@v3
+      #   with:
+      #     registry: ${{ env.IMAGE_REGISTRY }}
+      #     username: ${{ env.REGISTRY_USER }}
+      #     password: ${{ env.REGISTRY_PASSWORD }}
+      #     image: ${{ env.IMAGE_NAME }}
+      #     tags: ${{ env.IMAGE_TAGS }} 
