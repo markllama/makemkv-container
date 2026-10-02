@@ -5,7 +5,7 @@ on: [ workflow_dispatch ]
 
 # variables
 env:
-  MAKEMKV_VERSION: 1.18.4
+  MAKEMKV_VERSION: 2.0.0
   FFMPEG_BRANCH: release/8.1
 
   AUTHOR: Mark Lamourine <mark@llamatek.dev>
@@ -33,3 +33,89 @@ jobs:
       - name: Update package metadata
         run: |
           sudo apt -y update
+
+      - name: Install Ansible and prerequisite tools
+        run: |
+          scripts/prep-debian.sh
+
+      - name: Prepare build environment
+        run: |
+          ansible-playbook prepare-build-env-pb.yaml
+
+      - name: Prepare ffmpeg build environment
+        run: |
+          ansible-playbook prepare-ffmpeg-env-pb.yaml
+          
+      - name: Build ffmpeg
+        run: |
+          ansible-playbook build-ffmpeg-pb.yaml
+
+      - name: Build makemkv OSS binaries
+        run: |
+          ansible-playbook makemkvcon-pb.yaml
+
+      - name: Pull and unpack required tools
+        run: |
+          scripts/prepare-tools-tree.sh
+
+      - name: Resolve required shared objects for makemkvcon
+        run: |
+          scripts/resolve-shared-libraries.sh
+
+      - name: Create the container image
+        uses: redhat-actions/buildah-build@v3
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          containerfiles:
+            ./Containerfile
+          oci: true
+
+      # - name: Create Container Image
+      #   uses: redhat-actions/buildah-build@v3
+      #   with:
+      #     base-image: scratch
+      #     image: ${{ env.IMAGE_NAME }}
+      #     content: |
+      #       build/model/
+      #     workdir: /
+      #     envs: |
+      #       MAKEMKV_KEY=
+      #       HOME=/
+      #       LD_LIBRARY_PATH=/usr/lib64:/usr/lib
+      #     tags: |
+      #       latest
+
+      #     extra-args: |
+      #       --volume /config
+      #       --volume /input
+      #       --volume /output
+            
+      #     #author: ${{ env.AUTHOR }}
+      #     #created-by: ${{ env.BUILDER }}
+
+      #     annotations:
+      #       description=MakeMKV ${{ env.MAKEMKV_VERSION }}
+      #       license=Copyright (C) 2007-2025 GuinpinSoft inc
+
+      #     squash: true
+      #     oci: true
+        
+      - name: Confirm container image creation
+        run:
+          buildah images
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Push new image to registry
+        uses: redhat-actions/push-to-registry@v3
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }} 
