@@ -62,13 +62,17 @@ jobs:
         run: |
           scripts/resolve-shared-libraries.sh
 
-      - name: Create the container image
-        uses: redhat-actions/buildah-build@v3
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          containerfiles:
-            ./Containerfile
-          oci: true
+      # - name: Create the container image
+      #   uses: redhat-actions/buildah-build@v3
+      #   with:
+      #     image: ${{ env.IMAGE_NAME }}
+      #     containerfiles:
+      #       ./Containerfile
+      #     oci: true
+
+      - name: BUild container image with script
+        run: |
+          scripts/minimal-makemkv.sh
 
       # - name: Create Container Image
       #   uses: redhat-actions/buildah-build@v3
