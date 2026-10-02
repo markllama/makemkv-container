@@ -70,6 +70,36 @@ jobs:
             ./Containerfile
           oci: true
 
+      # - name: Create Container Image
+      #   uses: redhat-actions/buildah-build@v3
+      #   with:
+      #     base-image: scratch
+      #     image: ${{ env.IMAGE_NAME }}
+      #     content: |
+      #       build/model/
+      #     workdir: /
+      #     envs: |
+      #       MAKEMKV_KEY=
+      #       HOME=/
+      #       LD_LIBRARY_PATH=/usr/lib64:/usr/lib
+      #     tags: |
+      #       latest
+
+      #     extra-args: |
+      #       --volume /config
+      #       --volume /input
+      #       --volume /output
+            
+      #     #author: ${{ env.AUTHOR }}
+      #     #created-by: ${{ env.BUILDER }}
+
+      #     annotations:
+      #       description=MakeMKV ${{ env.MAKEMKV_VERSION }}
+      #       license=Copyright (C) 2007-2025 GuinpinSoft inc
+
+      #     squash: true
+      #     oci: true
+        
       - name: Confirm container image creation
         run:
           buildah images
