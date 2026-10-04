@@ -27,8 +27,6 @@ function main(){
 }
 
 function parse_args(){
-    echo Parsing
-
     # use getopt for switches
 
     # Left over are [MODE] [INPUT] [OUTPUT]
